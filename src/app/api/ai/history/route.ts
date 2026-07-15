@@ -1,0 +1,42 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
+import { verifySession } from '@/lib/dal'
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await verifySession()
+    if (!session) {
+      return NextResponse.json({ error: '请先登录' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const toolId = searchParams.get('toolId')
+    const page = parseInt(searchParams.get('page') || '1')
+    const pageSize = parseInt(searchParams.get('pageSize') || '10')
+
+    const where: Record<string, unknown> = { userId: session.userId }
+    if (toolId) where.toolId = toolId
+
+    const [records, total] = await Promise.all([
+      prisma.toolRecord.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.toolRecord.count({ where }),
+    ])
+
+    return NextResponse.json({
+      success: true,
+      records,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
+    })
+  } catch (err) {
+    console.error('Get history error:', err)
+    return NextResponse.json({ error: '获取历史记录失败' }, { status: 500 })
+  }
+}
