@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { decrypt } from '@/lib/session'
 
 const protectedPaths = ['/dashboard']
-const authPaths = ['/login', '/register', '/forgot-password']
+const authPaths = ['/login', '/register', '/forgot-password', '/auth']
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname

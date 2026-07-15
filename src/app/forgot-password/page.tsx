@@ -177,7 +177,7 @@ export default function ForgotPasswordPage() {
 
           <p className="text-center mt-4 text-sm" style={{ color: 'var(--muted)' }}>
             想起密码了？{' '}
-            <Link href="/login" className="text-brand-500 hover:underline">
+            <Link href="/auth?mode=login" className="text-brand-500 hover:underline">
               返回登录
             </Link>
           </p>

@@ -90,7 +90,7 @@ function PricingContent() {
                   当前方案
                 </div>
               ) : (
-                <Link href="/register" className="block text-center py-2.5 rounded-lg border text-sm transition-colors hover:border-brand-500"
+                <Link href="/auth?mode=register" className="block text-center py-2.5 rounded-lg border text-sm transition-colors hover:border-brand-500"
                   style={{ borderColor: 'var(--card-border)' }}>
                   注册
                 </Link>

@@ -35,11 +35,8 @@ export default function Navbar() {
           <Link href="/docs" className="text-sm hover:text-brand-500 transition-colors" style={{ color: 'var(--foreground)' }}>
             使用文档
           </Link>
-          <Link href="/login" className="text-sm px-4 py-2 rounded-lg transition-colors" style={{ color: 'var(--foreground)' }}>
-            登录
-          </Link>
-          <Link href="/register" className="btn-primary text-sm">
-            免费注册
+          <Link href="/auth" className="btn-primary text-sm">
+            登录 / 注册
           </Link>
         </div>
 
@@ -69,14 +66,9 @@ export default function Navbar() {
           <Link href="/docs" onClick={() => setMenuOpen(false)} className="block text-sm py-2" style={{ color: 'var(--foreground)' }}>
             使用文档
           </Link>
-          <div className="flex gap-3 pt-2">
-            <Link href="/login" onClick={() => setMenuOpen(false)} className="flex-1 text-center text-sm py-2 rounded-lg border" style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
-              登录
-            </Link>
-            <Link href="/register" onClick={() => setMenuOpen(false)} className="flex-1 text-center btn-primary text-sm">
-              注册
-            </Link>
-          </div>
+          <Link href="/auth" onClick={() => setMenuOpen(false)} className="flex-1 text-center btn-primary text-sm">
+            登录 / 注册
+          </Link>
         </div>
       )}
     </header>

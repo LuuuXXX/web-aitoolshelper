@@ -29,7 +29,7 @@ export default function HomePage() {
               无需复杂操作，一键生成专业内容。
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link href="/register" className="btn-primary text-base px-8 py-3">
+              <Link href="/auth?mode=register" className="btn-primary text-base px-8 py-3">
                 免费开始使用
               </Link>
               <Link href="/#tools" className="px-8 py-3 rounded-lg border text-base transition-colors hover:border-brand-500"
@@ -118,7 +118,7 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link href="/register" className="block text-center py-2.5 rounded-lg border transition-colors hover:border-brand-500"
+                <Link href="/auth?mode=register" className="block text-center py-2.5 rounded-lg border transition-colors hover:border-brand-500"
                   style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
                   开始使用
                 </Link>
@@ -174,7 +174,7 @@ export default function HomePage() {
             <p className="text-lg mb-8" style={{ color: 'var(--muted)' }}>
               立即注册，免费体验 AI 工具箱的强大功能
             </p>
-            <Link href="/register" className="btn-primary text-base px-8 py-3 inline-block">
+            <Link href="/auth?mode=register" className="btn-primary text-base px-8 py-3 inline-block">
               免费注册
             </Link>
           </div>
