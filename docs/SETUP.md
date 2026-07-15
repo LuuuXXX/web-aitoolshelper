@@ -41,6 +41,10 @@
    - 端口（默认 `5432`）
 4. 在 **数据安全性** → **白名单设置** 中添加服务器 IP
 
+> **重要**：如果 ECS 服务器与 RDS 不在同一 VPC（内网不通），需要：
+> - 方案 A：在 RDS 控制台申请**外网地址**，并将服务器公网 IP 加入白名单
+> - 方案 B：配置 VPC 对等连接打通两个 VPC
+
 ### 2.2 创建数据库和账号
 
 1. 在 RDS 控制台 → **账号管理** → 创建账号
@@ -52,10 +56,17 @@
 
 ### 2.3 配置连接串
 
+> **注意**：如果密码包含特殊字符（如 `@`、`:`、`/`），需要 URL 编码。
+> 例如 `Huawei@9527` → `Huawei%409527`
+
 在 `.env` 中设置：
 
 ```bash
-DATABASE_URL="postgresql://aitoolshelper:你的密码@pgm-xxxxx.pg.rds.aliyuncs.com:5432/aitoolshelper?schema=public"
+# 内网地址（ECS 与 RDS 同 VPC 时使用）
+DATABASE_URL="postgresql://aitoolshelper:密码@pgm-xxxxx.pg.rds.aliyuncs.com:5432/aitoolshelper?schema=public"
+
+# 外网地址（ECS 与 RDS 不同 VPC 时使用）
+DATABASE_URL="postgresql://aitoolshelper:密码@pgm-xxxxx.pg.rds.aliyuncs.com:5433/aitoolshelper?schema=public"
 ```
 
 ### 2.4 初始化表结构
@@ -68,28 +79,94 @@ npx prisma db push
 
 ## 3. SMTP 邮件服务配置
 
-用于发送注册验证码邮件。推荐使用 **阿里云邮件推送**（免费额度每日200封）。
+用于发送注册验证码邮件。推荐以下方案（按易用度排序）：
 
-### 3.1 阿里云邮件推送
+---
+
+### 方案一：QQ邮箱（推荐，最简单）
+
+**优势**：免费，配置最简单，无需域名，每天可发几百封。
+
+#### 配置步骤
+
+1. 登录 [QQ邮箱网页版](https://mail.qq.com/) → **设置** → **账户**
+2. 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务」
+3. 点击「**开启**」开启 SMTP 服务
+4. 按提示用手机发送短信验证，获取 **16位授权码**（非QQ密码）
+5. 保存授权码
+
+#### SMTP 信息
+
+| 项目 | 值 |
+|---|---|
+| 服务器 | `smtp.qq.com` |
+| 端口 | `465`（SSL） |
+| 用户名 | 你的QQ邮箱地址（如 `12345@qq.com`） |
+| 密码 | 16位授权码（非QQ登录密码） |
+
+#### 配置 .env
+
+```bash
+SMTP_HOST="smtp.qq.com"
+SMTP_PORT="465"
+SMTP_USER="你的QQ邮箱@qq.com"
+SMTP_PASS="16位授权码"
+SMTP_FROM="AI工具箱 <你的QQ邮箱@qq.com>"
+```
+
+---
+
+### 方案二：163邮箱
+
+与QQ邮箱类似：
+
+1. 登录 [163邮箱](https://mail.163.com/) → **设置** → **POP3/SMTP/IMAP**
+2. 开启 SMTP 服务，获取客户端授权码
+
+```bash
+SMTP_HOST="smtp.163.com"
+SMTP_PORT="465"
+SMTP_USER="你的邮箱@163.com"
+SMTP_PASS="客户端授权码"
+SMTP_FROM="AI工具箱 <你的邮箱@163.com>"
+```
+
+---
+
+### 方案三：Resend（现代化邮件API）
+
+**优势**：免费3000封/月，API驱动，到达率高。
+
+1. 注册 [resend.com](https://resend.com/)
+2. 获取 API Key
+3. Resend 同样提供 SMTP 接口：
+
+```bash
+SMTP_HOST="smtp.resend.com"
+SMTP_PORT="465"
+SMTP_USER="resend"
+SMTP_PASS="你的API Key"
+SMTP_FROM="AI工具箱 <onboarding@resend.dev>"
+```
+
+> 如需使用自定义发件域名，在 Resend 控制台添加域名并完成 DNS 验证。
+
+---
+
+### 方案四：阿里云邮件推送
+
+**优势**：免费200封/天，适合企业级使用。需域名 DNS 验证。
 
 1. 登录 [阿里云邮件推送控制台](https://dm.console.aliyun.com/)
 2. **发信域名** → 添加域名 → 完成 DNS 解析验证
-3. **发信地址** → 创建发信地址（如 `noreply@aitoolshelper.cn`）
+3. **发信地址** → 创建发信地址
 4. **SMTP 密码** → 设置 SMTP 密码
-
-### 3.2 获取 SMTP 信息
-
-阿里云邮件推送 SMTP 信息：
-- **服务器**：`smtpdm.aliyun.com`
-- **端口**：`465`（SSL）或 `80`（明文）
-
-### 3.3 配置 .env
 
 ```bash
 SMTP_HOST="smtpdm.aliyun.com"
 SMTP_PORT="465"
 SMTP_USER="noreply@aitoolshelper.cn"
-SMTP_PASS="你在阿里云设置的SMTP密码"
+SMTP_PASS="阿里云SMTP密码"
 SMTP_FROM="AI工具箱 <noreply@aitoolshelper.cn>"
 ```
 
