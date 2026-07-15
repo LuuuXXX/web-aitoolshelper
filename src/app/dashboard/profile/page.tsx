@@ -7,7 +7,6 @@ import * as Icons from 'lucide-react'
 interface UserData {
   id: string
   email: string | null
-  phone: string | null
   name: string | null
   avatar: string | null
   plan: string
@@ -86,15 +85,6 @@ export default function ProfilePage() {
               <input
                 type="text"
                 value={user.email || '未绑定'}
-                disabled
-                className="input-field opacity-60"
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>手机号</label>
-              <input
-                type="text"
-                value={user.phone || '未绑定'}
                 disabled
                 className="input-field opacity-60"
               />

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createSession } from '@/lib/session'
-import { isEmail, isPhone } from '@/lib/utils'
+import { isEmail } from '@/lib/utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import bcrypt from 'bcryptjs'
 
@@ -23,17 +23,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请填写账号和密码' }, { status: 400 })
     }
 
-    const where = isEmail(account)
-      ? { email: account }
-      : isPhone(account)
-        ? { phone: account }
-        : null
-
-    if (!where) {
-      return NextResponse.json({ error: '请输入有效的邮箱或手机号' }, { status: 400 })
+    if (!isEmail(account)) {
+      return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
     }
 
-    const user = await prisma.user.findFirst({ where })
+    const user = await prisma.user.findUnique({
+      where: { email: account },
+    })
 
     if (!user) {
       return NextResponse.json({ error: '账号不存在，请先注册' }, { status: 404 })
@@ -52,7 +48,6 @@ export async function POST(request: NextRequest) {
         id: user.id,
         name: user.name,
         email: user.email,
-        phone: user.phone,
         role: user.role,
         plan: user.plan,
       },

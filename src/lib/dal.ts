@@ -30,7 +30,6 @@ export const getCurrentUser = cache(async () => {
     select: {
       id: true,
       email: true,
-      phone: true,
       name: true,
       avatar: true,
       role: true,
@@ -42,6 +41,15 @@ export const getCurrentUser = cache(async () => {
       createdAt: true,
     },
   })
+
+  if (user) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (!user.lastUseDate || user.lastUseDate < today) {
+      return { ...user, usedToday: 0 }
+    }
+  }
+
   return user
 })
 

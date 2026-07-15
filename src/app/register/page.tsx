@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { isEmail, isPhone } from '@/lib/utils'
+import { isEmail } from '@/lib/utils'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -28,11 +28,11 @@ export default function RegisterPage() {
   async function sendCode() {
     setError('')
     if (!account) {
-      setError('请先输入邮箱或手机号')
+      setError('请先输入邮箱')
       return
     }
-    if (!isEmail(account) && !isPhone(account)) {
-      setError('请输入有效的邮箱或手机号')
+    if (!isEmail(account)) {
+      setError('请输入有效的邮箱')
       return
     }
 
@@ -120,17 +120,18 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>邮箱 / 手机号</label>
+              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>邮箱</label>
               <input
-                type="text"
+                type="email"
                 value={account}
                 onChange={(e) => setAccount(e.target.value)}
-                placeholder="输入邮箱或手机号"
+                placeholder="输入邮箱"
                 className="input-field"
+                autoComplete="email"
               />
             </div>
             <div>
-              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>验证码（可选）</label>
+              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>验证码</label>
               <div className="flex gap-2">
                 <input
                   type="text"

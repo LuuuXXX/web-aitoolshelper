@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { generateCode, isEmail, isPhone } from '@/lib/utils'
+import { generateCode, isEmail } from '@/lib/utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { sendVerificationCode } from '@/lib/email'
-import { sendSms } from '@/lib/sms'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,14 +16,11 @@ export async function POST(request: NextRequest) {
     const { target, type = 'register' } = body
 
     if (!target) {
-      return NextResponse.json({ error: '请输入邮箱或手机号' }, { status: 400 })
+      return NextResponse.json({ error: '请输入邮箱' }, { status: 400 })
     }
 
-    const isMail = isEmail(target)
-    const isMobile = isPhone(target)
-
-    if (!isMail && !isMobile) {
-      return NextResponse.json({ error: '请输入有效的邮箱或手机号' }, { status: 400 })
+    if (!isEmail(target)) {
+      return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
     }
 
     const recent = await prisma.verificationCode.findFirst({
@@ -44,12 +40,7 @@ export async function POST(request: NextRequest) {
       data: { target, code, type, expiresAt },
     })
 
-    let sent = false
-    if (isMail) {
-      sent = await sendVerificationCode(target, code, type)
-    } else {
-      sent = await sendSms(target, code)
-    }
+    const sent = await sendVerificationCode(target, code, type)
 
     if (process.env.NODE_ENV === 'development') {
       return NextResponse.json({
@@ -61,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     if (!sent) {
       return NextResponse.json(
-        { error: '通知服务暂未配置，请联系管理员' },
+        { error: '邮件发送失败，请稍后重试或联系管理员' },
         { status: 503 }
       )
     }

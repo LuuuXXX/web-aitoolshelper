@@ -14,7 +14,6 @@ export async function GET() {
       select: {
         id: true,
         email: true,
-        phone: true,
         name: true,
         avatar: true,
         role: true,
@@ -64,7 +63,6 @@ export async function PUT(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        phone: true,
         name: true,
         avatar: true,
         role: true,

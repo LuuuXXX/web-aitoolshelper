@@ -20,7 +20,7 @@ export default function TermsPage() {
 
             <section>
               <h2 className="text-lg font-bold mb-2">二、用户注册</h2>
-              <p>1. 用户须使用真实有效的邮箱或手机号注册账号。</p>
+              <p>1. 用户须使用真实有效的邮箱注册账号。</p>
               <p>2. 用户应妥善保管账号密码，因账号泄露导致的损失由用户自行承担。</p>
               <p>3. 每个用户仅可注册一个账号。</p>
             </section>

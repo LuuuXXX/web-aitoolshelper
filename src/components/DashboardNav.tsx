@@ -10,7 +10,6 @@ interface UserInfo {
   id: string
   name: string
   email: string | null
-  phone: string | null
   plan: string
   planExpire: string | null
   dailyLimit: number

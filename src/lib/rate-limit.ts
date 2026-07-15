@@ -36,9 +36,9 @@ export function rateLimit(
 }
 
 export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
   const real = request.headers.get('x-real-ip')
   if (real) return real
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0].trim()
   return 'unknown'
 }

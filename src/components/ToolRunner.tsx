@@ -64,9 +64,13 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
   }
 
   async function copyOutput() {
-    await navigator.clipboard.writeText(output)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(output)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setError('复制失败，请手动选择文本复制')
+    }
   }
 
   return (

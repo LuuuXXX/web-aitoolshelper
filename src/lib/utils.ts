@@ -17,10 +17,6 @@ export function isEmail(target: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(target)
 }
 
-export function isPhone(target: string): boolean {
-  return /^1[3-9]\d{9}$/.test(target)
-}
-
 export function cn(...classes: (string | undefined | false | null)[]): string {
   return classes.filter(Boolean).join(' ')
 }

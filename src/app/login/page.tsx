@@ -59,14 +59,14 @@ export default function LoginPage() {
               </div>
             )}
             <div>
-              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>邮箱 / 手机号</label>
+              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>邮箱</label>
               <input
-                type="text"
+                type="email"
                 value={account}
                 onChange={(e) => setAccount(e.target.value)}
-                placeholder="输入邮箱或手机号"
+                placeholder="输入邮箱"
                 className="input-field"
-                autoComplete="username"
+                autoComplete="email"
               />
             </div>
             <div>
