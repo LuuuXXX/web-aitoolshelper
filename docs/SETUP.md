@@ -221,27 +221,78 @@ DEEPSEEK_BASE_URL="https://api.deepseek.com"
 
 ---
 
-## 6. 阿里云短信配置（可选）
+## 6. 短信服务配置（可选）
 
-当前默认使用邮箱验证码。如需短信验证：
+> 当前已使用 **163邮箱验证码**（已验证通过），短信为可选增强。
+> 如果用户群体更习惯手机注册，可接入以下短信服务。
 
-### 6.1 开通阿里云短信
+---
+
+### 方案对比
+
+| 服务商 | 单价 | 免费额度 | 审核要求 | 接入难度 | 推荐度 |
+|---|---|---|---|---|---|
+| **榛子云短信** | ¥0.04/条 | 注册送50条 | 仅需实名 | 最低（REST API） | ⭐⭐⭐⭐⭐ |
+| **腾讯云短信** | ¥0.04/条 | 每月100条 | 签名+模板审核 | 中 | ⭐⭐⭐⭐ |
+| **阿里云短信** | ¥0.045/条 | 无 | 签名+模板审核 | 中 | ⭐⭐⭐ |
+| **网易短信** | ¥0.05/条 | 注册送100条 | 签名+模板审核 | 中 | ⭐⭐⭐ |
+
+---
+
+### 方案一：榛子云短信（推荐，最快接入）
+
+**优势**：注册即用，无需签名审核，REST API 简单，成本最低。
+
+1. 注册 [榛子云短信](https://smsow.zhenzikj.com/)
+2. 实名认证后获取 **AppId** 和 **AppSecret**
+3. 创建验证码模板（即时生效，无需审核）
+
+```bash
+SMS_PROVIDER="zhenzi"
+ZHENZI_APP_ID="你的AppId"
+ZHENZI_APP_SECRET="你的AppSecret"
+ZHENZI_TEMPLATE_ID="你的模板ID"
+ZHENZI_API_URL="https://smsoperator.zhenzikj.com"
+```
+
+> 接入需在 `src/lib/sms.ts` 中实现榛子云 REST API 调用。
+
+---
+
+### 方案二：腾讯云短信
+
+1. 登录 [腾讯云短信控制台](https://console.cloud.tencent.com/smsv2)
+2. **签名管理** → 创建签名（需审核，1-2小时）
+3. **正文模板管理** → 创建验证码模板（需审核）
+4. 获取 **SecretId/SecretKey**：[API密钥管理](https://console.cloud.tencent.com/cam/capi)
+
+```bash
+SMS_PROVIDER="tencent"
+TENCENT_SMS_SECRET_ID="你的SecretId"
+TENCENT_SMS_SECRET_KEY="你的SecretKey"
+TENCENT_SMS_SIGN_NAME="你的签名"
+TENCENT_SMS_TEMPLATE_ID="你的模板ID"
+TENCENT_SMS_SDK_APP_ID="你的SDKAppID"
+```
+
+> 接入需安装 `tencentcloud-sdk-nodejs-sms`。
+
+---
+
+### 方案三：阿里云短信
 
 1. 登录 [阿里云短信服务控制台](https://dysms.console.aliyun.com/)
 2. **国内消息** → **签名管理** → 添加签名（需审核）
 3. **国内消息** → **模板管理** → 添加模板（验证码模板）
 4. 获取 **AccessKey**：访问 [RAM 控制台](https://ram.console.aliyun.com/) 创建子账号，授予 `AliyunDysmsFullAccess` 权限
 
-### 6.2 配置 .env
-
 ```bash
+SMS_PROVIDER="aliyun"
 ALIYUN_SMS_ACCESS_KEY_ID="你的AccessKeyId"
 ALIYUN_SMS_ACCESS_KEY_SECRET="你的AccessKeySecret"
 ALIYUN_SMS_SIGN_NAME="你的短信签名"
 ALIYUN_SMS_TEMPLATE_CODE="SMS_xxxxxxxx"
 ```
-
-### 6.3 安装依赖
 
 ```bash
 npm install @alicloud/dysmsapi20170525 @alicloud/openapi-client
@@ -249,29 +300,31 @@ npm install @alicloud/dysmsapi20170525 @alicloud/openapi-client
 
 然后取消 `src/lib/sms.ts` 中的注释实现。
 
+
 ---
 
 ## 7. 环境变量总览
 
-| 变量 | 说明 | 必填 |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL 连接串 | ✅ |
-| `JWT_SECRET` | JWT 签名密钥（`openssl rand -base64 32`） | ✅ |
-| `JWT_EXPIRES` | Session 有效期（默认 `7d`） | |
-| `DEEPSEEK_API_KEY` | DeepSeek API Key | ✅ |
-| `DEEPSEEK_BASE_URL` | DeepSeek API 地址 | |
-| `ALIPAY_APP_ID` | 支付宝应用 ID | ✅ |
-| `ALIPAY_APP_PRIVATE_KEY_PATH` | 应用私钥文件路径 | ✅ |
-| `ALIPAY_ALIPAY_PUBLIC_KEY_PATH` | 支付宝公钥文件路径 | ✅ |
-| `ALIPAY_NOTIFY_URL` | 支付回调地址 | 部署后 |
-| `ALIPAY_RETURN_URL` | 支付返回地址 | 部署后 |
-| `SMTP_HOST` | SMTP 服务器 | 邮箱验证 |
-| `SMTP_PORT` | SMTP 端口 | |
-| `SMTP_USER` | SMTP 用户名 | |
-| `SMTP_PASS` | SMTP 密码 | |
-| `SMTP_FROM` | 发件人地址 | |
-| `APP_URL` | 应用 URL | |
-| `NODE_ENV` | 环境标识 | |
+| 变量 | 说明 | 必填 | 状态 |
+|---|---|---|---|
+| `DATABASE_URL` | PostgreSQL 连接串 | ✅ | ✅ 已配置 |
+| `JWT_SECRET` | JWT 签名密钥（`openssl rand -base64 32`） | ✅ | ✅ 已配置 |
+| `JWT_EXPIRES` | Session 有效期（默认 `7d`） | | |
+| `DEEPSEEK_API_KEY` | DeepSeek API Key | ✅ | ✅ 已配置 |
+| `DEEPSEEK_BASE_URL` | DeepSeek API 地址 | | ✅ 已配置 |
+| `ALIPAY_APP_ID` | 支付宝应用 ID | ✅ | ✅ 已配置 |
+| `ALIPAY_APP_PRIVATE_KEY_PATH` | 应用私钥文件路径 | ✅ | ✅ 已配置 |
+| `ALIPAY_ALIPAY_PUBLIC_KEY_PATH` | 支付宝公钥文件路径 | ✅ | ✅ 已配置 |
+| `ALIPAY_NOTIFY_URL` | 支付回调地址 | 部署后 | 待绑定域名 |
+| `ALIPAY_RETURN_URL` | 支付返回地址 | 部署后 | 待绑定域名 |
+| `SMTP_HOST` | SMTP 服务器 | 邮箱验证 | ✅ 已配置 (smtp.163.com) |
+| `SMTP_PORT` | SMTP 端口 | | ✅ 已配置 (465) |
+| `SMTP_USER` | SMTP 用户名 | | ✅ 已配置 |
+| `SMTP_PASS` | SMTP 授权码 | | ✅ 已配置 |
+| `SMTP_FROM` | 发件人地址 | | ✅ 已配置 |
+| `SMS_PROVIDER` | 短信服务商 (zhenzi/tencent/aliyun) | 可选 | 未配置 |
+| `APP_URL` | 应用 URL | | 待绑定域名 |
+| `NODE_ENV` | 环境标识 | | ✅ production |
 
 ---
 
