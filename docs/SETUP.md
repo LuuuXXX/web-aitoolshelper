@@ -221,84 +221,21 @@ DEEPSEEK_BASE_URL="https://api.deepseek.com"
 
 ---
 
-## 6. 短信服务配置（可选）
+## 6. 短信服务（不需要）
 
-> 当前已使用 **163邮箱验证码**（已验证通过），短信为可选增强。
-> 如果用户群体更习惯手机注册，可接入以下短信服务。
+> **本项目不使用短信验证码。**
 
----
+业界通行做法：
+- **注册/登录**：邮箱验证码（已实现 ✅）
+- **找回密码**：邮箱验证码重置（已实现 ✅）
+- **敏感操作2FA**：TOTP 动态码（如需，可后续接入 [otplib](https://github.com/yeojz/otplib)，完全免费）
 
-### 方案对比
+短信验证码仅适用于金融/银行级产品。对于 AI 工具站：
+1. 成本高（¥0.04+/条），邮箱免费
+2. SMS 拦截是已知安全漏洞，邮箱+HTTPS 更安全
+3. 用户体验上，邮箱验证码和短信验证码体验相当
 
-| 服务商 | 单价 | 免费额度 | 审核要求 | 接入难度 | 推荐度 |
-|---|---|---|---|---|---|
-| **榛子云短信** | ¥0.04/条 | 注册送50条 | 仅需实名 | 最低（REST API） | ⭐⭐⭐⭐⭐ |
-| **腾讯云短信** | ¥0.04/条 | 每月100条 | 签名+模板审核 | 中 | ⭐⭐⭐⭐ |
-| **阿里云短信** | ¥0.045/条 | 无 | 签名+模板审核 | 中 | ⭐⭐⭐ |
-| **网易短信** | ¥0.05/条 | 注册送100条 | 签名+模板审核 | 中 | ⭐⭐⭐ |
-
----
-
-### 方案一：榛子云短信（推荐，最快接入）
-
-**优势**：注册即用，无需签名审核，REST API 简单，成本最低。
-
-1. 注册 [榛子云短信](https://smsow.zhenzikj.com/)
-2. 实名认证后获取 **AppId** 和 **AppSecret**
-3. 创建验证码模板（即时生效，无需审核）
-
-```bash
-SMS_PROVIDER="zhenzi"
-ZHENZI_APP_ID="你的AppId"
-ZHENZI_APP_SECRET="你的AppSecret"
-ZHENZI_TEMPLATE_ID="你的模板ID"
-ZHENZI_API_URL="https://smsoperator.zhenzikj.com"
-```
-
-> 接入需在 `src/lib/sms.ts` 中实现榛子云 REST API 调用。
-
----
-
-### 方案二：腾讯云短信
-
-1. 登录 [腾讯云短信控制台](https://console.cloud.tencent.com/smsv2)
-2. **签名管理** → 创建签名（需审核，1-2小时）
-3. **正文模板管理** → 创建验证码模板（需审核）
-4. 获取 **SecretId/SecretKey**：[API密钥管理](https://console.cloud.tencent.com/cam/capi)
-
-```bash
-SMS_PROVIDER="tencent"
-TENCENT_SMS_SECRET_ID="你的SecretId"
-TENCENT_SMS_SECRET_KEY="你的SecretKey"
-TENCENT_SMS_SIGN_NAME="你的签名"
-TENCENT_SMS_TEMPLATE_ID="你的模板ID"
-TENCENT_SMS_SDK_APP_ID="你的SDKAppID"
-```
-
-> 接入需安装 `tencentcloud-sdk-nodejs-sms`。
-
----
-
-### 方案三：阿里云短信
-
-1. 登录 [阿里云短信服务控制台](https://dysms.console.aliyun.com/)
-2. **国内消息** → **签名管理** → 添加签名（需审核）
-3. **国内消息** → **模板管理** → 添加模板（验证码模板）
-4. 获取 **AccessKey**：访问 [RAM 控制台](https://ram.console.aliyun.com/) 创建子账号，授予 `AliyunDysmsFullAccess` 权限
-
-```bash
-SMS_PROVIDER="aliyun"
-ALIYUN_SMS_ACCESS_KEY_ID="你的AccessKeyId"
-ALIYUN_SMS_ACCESS_KEY_SECRET="你的AccessKeySecret"
-ALIYUN_SMS_SIGN_NAME="你的短信签名"
-ALIYUN_SMS_TEMPLATE_CODE="SMS_xxxxxxxx"
-```
-
-```bash
-npm install @alicloud/dysmsapi20170525 @alicloud/openapi-client
-```
-
-然后取消 `src/lib/sms.ts` 中的注释实现。
+如未来确有短信需求，推荐 **榛子云短信**（注册即用，¥0.04/条，无签名审核）：https://smsow.zhenzikj.com/
 
 
 ---
@@ -322,7 +259,6 @@ npm install @alicloud/dysmsapi20170525 @alicloud/openapi-client
 | `SMTP_USER` | SMTP 用户名 | | ✅ 已配置 |
 | `SMTP_PASS` | SMTP 授权码 | | ✅ 已配置 |
 | `SMTP_FROM` | 发件人地址 | | ✅ 已配置 |
-| `SMS_PROVIDER` | 短信服务商 (zhenzi/tencent/aliyun) | 可选 | 未配置 |
 | `APP_URL` | 应用 URL | | 待绑定域名 |
 | `NODE_ENV` | 环境标识 | | ✅ production |
 

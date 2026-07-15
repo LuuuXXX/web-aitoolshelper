@@ -45,8 +45,9 @@ export default function DocsPage() {
           <section id="register" className="mb-10">
             <h2 className="text-xl font-bold mb-3">2. 注册与登录</h2>
             <div className="space-y-3 text-sm leading-relaxed">
-              <p><strong>注册：</strong>支持邮箱和手机号注册。填写账号信息后点击注册即可。验证码为可选项，配置邮件/短信服务后可使用。</p>
-              <p><strong>登录：</strong>使用注册时的邮箱或手机号 + 密码登录。登录状态保持 7 天。</p>
+              <p><strong>注册：</strong>支持邮箱注册。填写邮箱后点击「发送验证码」，输入收到的验证码即可完成注册。</p>
+              <p><strong>登录：</strong>使用注册时的邮箱 + 密码登录。登录状态保持 7 天。</p>
+              <p><strong>找回密码：</strong>在登录页点击「忘记密码?」，通过邮箱验证码重置密码。</p>
               <p><strong>安全提示：</strong>密码至少 8 位，建议使用字母、数字和特殊字符组合。</p>
             </div>
           </section>

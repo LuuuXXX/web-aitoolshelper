@@ -70,7 +70,12 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm mb-1.5" style={{ color: 'var(--muted)' }}>密码</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label style={{ color: 'var(--muted)' }}>密码</label>
+                <Link href="/forgot-password" className="text-xs text-brand-500 hover:underline">
+                  忘记密码?
+                </Link>
+              </div>
               <input
                 type="password"
                 value={password}
