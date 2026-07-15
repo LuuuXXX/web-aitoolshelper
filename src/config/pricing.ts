@@ -15,7 +15,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'monthly',
     name: '月度会员',
-    price: 19,
+    price: 9.9,
     originalPrice: 29,
     duration: '30天',
     durationDays: 30,
@@ -31,7 +31,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'quarterly',
     name: '季度会员',
-    price: 49,
+    price: 29.9,
     originalPrice: 87,
     duration: '90天',
     durationDays: 90,
@@ -42,7 +42,7 @@ export const PLANS: PlanConfig[] = [
       '优先响应速度',
       '历史记录保存',
       '季度数据报告',
-      '省 38 元（约 5.5 折）',
+      '省 59.9 元（约 5 折）',
     ],
     popular: true,
     alipaySubject: 'AI工具箱-季度会员',
@@ -50,7 +50,7 @@ export const PLANS: PlanConfig[] = [
   {
     id: 'yearly',
     name: '年度会员',
-    price: 128,
+    price: 99,
     originalPrice: 348,
     duration: '365天',
     durationDays: 365,
@@ -62,7 +62,7 @@ export const PLANS: PlanConfig[] = [
       '无限历史记录保存',
       '年度数据报告',
       '新工具优先体验',
-      '省 220 元（约 3.7 折）',
+      '省 197.2 元（约 2.8 折）',
     ],
     alipaySubject: 'AI工具箱-年度会员',
   },
@@ -82,4 +82,10 @@ export const FREE_PLAN = {
 
 export function getPlanById(id: string): PlanConfig | undefined {
   return PLANS.find((p) => p.id === id)
+}
+
+export function getDailyLimitByPlan(plan: string): number {
+  if (plan === 'free') return FREE_PLAN.dailyLimit
+  const p = getPlanById(plan)
+  return p?.dailyLimit ?? FREE_PLAN.dailyLimit
 }

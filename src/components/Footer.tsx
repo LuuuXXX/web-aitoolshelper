@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Footer() {
   return (
     <footer className="mt-auto border-t" style={{ borderColor: 'var(--card-border)' }}>
@@ -10,23 +12,23 @@ export default function Footer() {
           <div>
             <h4 className="font-medium mb-2" style={{ color: 'var(--muted)' }}>产品</h4>
             <ul className="space-y-1">
-              <li><a href="/#tools" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>工具库</a></li>
-              <li><a href="/pricing" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>定价方案</a></li>
-              <li><a href="/dashboard" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>控制台</a></li>
+              <li><Link href="/#tools" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>工具库</Link></li>
+              <li><Link href="/pricing" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>定价方案</Link></li>
+              <li><Link href="/dashboard" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>控制台</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium mb-2" style={{ color: 'var(--muted)' }}>支持</h4>
             <ul className="space-y-1">
-              <li><a href="/docs" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>使用文档</a></li>
-              <li><a href="/history" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>历史记录</a></li>
+              <li><Link href="/docs" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>使用文档</Link></li>
+              <li><Link href="/dashboard/history" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>历史记录</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-medium mb-2" style={{ color: 'var(--muted)' }}>法律</h4>
             <ul className="space-y-1">
-              <li><a href="/terms" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>服务条款</a></li>
-              <li><a href="/privacy" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>隐私政策</a></li>
+              <li><Link href="/terms" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>服务条款</Link></li>
+              <li><Link href="/privacy" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>隐私政策</Link></li>
             </ul>
           </div>
         </div>

@@ -34,7 +34,15 @@ export default async function ToolPage({ params }: { params: Promise<{ toolId: s
             </div>
           </div>
 
-          <ToolRunner tool={tool} />
+          <ToolRunner tool={{
+            id: tool.id,
+            name: tool.name,
+            description: tool.description,
+            icon: tool.icon,
+            category: tool.category,
+            fields: tool.fields,
+            badge: tool.badge,
+          }} />
         </div>
       </main>
     </div>

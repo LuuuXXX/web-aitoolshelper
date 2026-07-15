@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI工具箱
 
-## Getting Started
+开箱即用的 AI 应用服务平台，集合 12+ 款 AI 工具，涵盖智能写作、营销文案、办公效率、创意工具等场景。
 
-First, run the development server:
+## 技术栈
+
+- **前端**：Next.js 16 + React 19 + Tailwind CSS v4
+- **后端**：Next.js API Routes（全栈一体）
+- **数据库**：PostgreSQL（阿里云 RDS）
+- **AI**：DeepSeek API
+- **支付**：支付宝电脑网站支付
+- **部署**：PM2 + Nginx
+
+## 功能
+
+- 用户注册/登录（邮箱验证码 + 密码）
+- 12+ AI 工具（文章写作、小红书文案、简历优化等）
+- 支付宝订阅支付（月/季/年三档）
+- 使用历史记录
+- 每日免费额度 + 付费套餐
+- 响应式设计，支持深色模式
+
+## 快速开始
 
 ```bash
+# 安装依赖
+npm install
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env，至少配置 DATABASE_URL、JWT_SECRET、DEEPSEEK_API_KEY
+
+# 生成 Prisma Client 并初始化数据库
+npx prisma generate
+npx prisma db push
+
+# 启动开发服务器
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 项目结构
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/              # Next.js App Router 页面和 API
+│   ├── api/          # API 路由
+│   ├── dashboard/    # 用户控制台
+│   ├── login/        # 登录页
+│   ├── register/     # 注册页
+│   ├── pricing/      # 定价页
+│   └── docs/         # 使用文档
+├── components/       # React 组件
+├── config/           # 配置（工具定义、定价方案）
+├── generated/        # Prisma 生成的客户端代码
+└── lib/              # 工具库（数据库、认证、AI、支付等）
+```
 
-## Learn More
+## 定价
 
-To learn more about Next.js, take a look at the following resources:
+| 套餐 | 价格 | 每日额度 |
+|---|---|---|
+| 免费体验 | ¥0 | 5 次/天 |
+| 月度会员 | ¥9.9 | 100 次/天 |
+| 季度会员 | ¥29.9 | 100 次/天 |
+| 年度会员 | ¥99 | 200 次/天 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 文档
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [部署与配置指南](docs/SETUP.md)
+- [使用文档](https://aitoolshelper.cn/docs)
 
-## Deploy on Vercel
+## 备案
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+湘ICP备2026026989号-1

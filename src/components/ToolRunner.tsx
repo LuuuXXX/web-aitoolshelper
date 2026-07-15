@@ -4,9 +4,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Copy, Check, PenTool } from 'lucide-react'
 import Icon from '@/components/Icon'
-import type { Tool } from '@/config/tools'
+import type { ToolField } from '@/config/tools'
 
-export default function ToolRunner({ tool }: { tool: Tool }) {
+type ToolClientData = {
+  id: string
+  name: string
+  description: string
+  icon: string
+  category: string
+  fields: ToolField[]
+  badge?: string
+}
+
+export default function ToolRunner({ tool }: { tool: ToolClientData }) {
   const router = useRouter()
   const [values, setValues] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)

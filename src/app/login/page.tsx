@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
-import { isEmail, isPhone } from '@/lib/utils'
 
 export default function LoginPage() {
   const router = useRouter()

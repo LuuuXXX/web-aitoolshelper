@@ -9,7 +9,7 @@ export function isSmsConfigured(): boolean {
   )
 }
 
-export async function sendSms(phone: string, code: string): Promise<boolean> {
+export async function sendSms(phone: string, _code: string): Promise<boolean> {
   if (!isSmsConfigured()) {
     console.warn('SMS not configured, skipping send to:', phone)
     return false

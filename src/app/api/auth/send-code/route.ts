@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { generateCode, isEmail, isPhone } from '@/lib/utils'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { sendVerificationCode } from '@/lib/email'
 import { sendSms } from '@/lib/sms'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const ipLimited = rateLimit(`sendcode:${ip}`, 3, 60_000)
+    if (!ipLimited.allowed) {
+      return NextResponse.json({ error: '发送过于频繁，请稍后再试' }, { status: 429 })
+    }
+
     const body = await request.json()
     const { target, type = 'register' } = body
 
@@ -20,7 +27,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请输入有效的邮箱或手机号' }, { status: 400 })
     }
 
-    // 频率限制：同一 target 60秒内只能发一次
     const recent = await prisma.verificationCode.findFirst({
       where: {
         target,
@@ -45,13 +51,19 @@ export async function POST(request: NextRequest) {
       sent = await sendSms(target, code)
     }
 
-    // 开发环境下始终返回验证码（生产环境删除此行）
-    if (process.env.NODE_ENV === 'development' || !sent) {
+    if (process.env.NODE_ENV === 'development') {
       return NextResponse.json({
         success: true,
-        message: sent ? '验证码已发送' : '通知服务未配置，请使用开发验证码',
-        devCode: process.env.NODE_ENV === 'development' ? code : undefined,
+        message: '验证码已发送',
+        devCode: code,
       })
+    }
+
+    if (!sent) {
+      return NextResponse.json(
+        { error: '通知服务暂未配置，请联系管理员' },
+        { status: 503 }
+      )
     }
 
     return NextResponse.json({ success: true, message: '验证码已发送' })

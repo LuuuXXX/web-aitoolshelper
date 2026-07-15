@@ -83,7 +83,7 @@ export async function queryPayment(tradeNo: string, outTradeNo?: string): Promis
       : { trade_no: tradeNo },
   })
 
-  const response = result as any
+  const response = result as { alipay_trade_query_response?: { code: string; trade_status: string; trade_no: string; total_amount: string } }
   if (response.alipay_trade_query_response?.code === '10000') {
     const data = response.alipay_trade_query_response
     return {

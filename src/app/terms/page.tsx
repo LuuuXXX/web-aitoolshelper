@@ -15,7 +15,7 @@ export default function TermsPage() {
           <div className="space-y-6 text-sm leading-relaxed">
             <section>
               <h2 className="text-lg font-bold mb-2">一、服务说明</h2>
-              <p>AI工具箱（以下简称"本服务"）由本站运营方提供，是一个基于人工智能技术的在线工具服务平台。用户通过注册和使用本服务，即表示同意本服务条款的全部内容。</p>
+              <p>AI工具箱（以下简称&quot;本服务&quot;）由本站运营方提供，是一个基于人工智能技术的在线工具服务平台。用户通过注册和使用本服务，即表示同意本服务条款的全部内容。</p>
             </section>
 
             <section>

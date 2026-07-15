@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifySession, isPremiumUser } from '@/lib/dal'
+import { verifySession } from '@/lib/dal'
 import { chatCompletion } from '@/lib/deepseek'
 import { getToolById } from '@/config/tools'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const ipLimited = rateLimit(`airun:${ip}`, 20, 60_000)
+    if (!ipLimited.allowed) {
+      return NextResponse.json(
+        { error: '请求过于频繁，请稍后再试' },
+        { status: 429 }
+      )
+    }
+
     const session = await verifySession()
     if (!session) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
@@ -60,7 +70,7 @@ export async function POST(request: NextRequest) {
       { role: 'user' as const, content: tool.userPrompt(input) },
     ]
 
-    const output = await chatCompletion(messages, {
+    const { content: output, tokensUsed } = await chatCompletion(messages, {
       temperature: 0.7,
       maxTokens: 4096,
     })
@@ -78,6 +88,7 @@ export async function POST(request: NextRequest) {
         toolId,
         input: JSON.stringify(input),
         output,
+        tokensUsed,
       },
     })
 

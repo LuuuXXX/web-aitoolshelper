@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model User {
@@ -19,7 +19,7 @@ model User {
   plan          String   @default("free") // free | monthly | quarterly | yearly
   planExpire    DateTime?
   // quotas
-  dailyLimit    Int      @default(10)
+  dailyLimit    Int      @default(5)
   usedToday     Int      @default(0)
   lastUseDate   DateTime?
   // timestamps
@@ -37,7 +37,7 @@ model Order {
   userId          String
   orderNo         String   @unique
   plan            String   // monthly | quarterly | yearly
-  amount          Float
+  amount          Decimal  @db.Decimal(10, 2)
   status          String   @default("pending") // pending | paid | failed | refunded
   paymentMethod   String   @default("alipay")
   tradeNo         String?  // alipay trade no
@@ -78,12 +78,4 @@ model VerificationCode {
 
   @@index([target])
   @@map("verification_codes")
-}
-
-model SystemConfig {
-  id    String @id @default(cuid())
-  key   String @unique
-  value String
-
-  @@map("system_configs")
 }

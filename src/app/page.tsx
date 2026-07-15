@@ -69,7 +69,7 @@ export default function HomePage() {
                     {tools.map((tool) => (
                       <Link
                         key={tool.id}
-                        href={`/tools/${tool.id}`}
+                        href={`/dashboard/tools/${tool.id}`}
                         className="card p-5 hover:border-brand-500 transition-all hover:shadow-lg group"
                       >
                         <div className="flex items-start justify-between mb-3">

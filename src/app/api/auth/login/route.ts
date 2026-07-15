@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createSession } from '@/lib/session'
-import { generateCode, isEmail, isPhone } from '@/lib/utils'
-import { sendVerificationCode } from '@/lib/email'
-import { sendSms } from '@/lib/sms'
+import { isEmail, isPhone } from '@/lib/utils'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const limited = rateLimit(`login:${ip}`, 10, 60_000)
+    if (!limited.allowed) {
+      return NextResponse.json(
+        { error: '登录尝试过于频繁，请稍后再试' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
-    const { account, password, code } = body
+    const { account, password } = body
 
     if (!account || !password) {
       return NextResponse.json({ error: '请填写账号和密码' }, { status: 400 })

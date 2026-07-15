@@ -9,32 +9,41 @@ import { formatDateTime } from '@/lib/utils'
 
 const toolMap = Object.fromEntries(TOOLS.map((t) => [t.id, t]))
 
+interface HistoryRecord {
+  id: string
+  toolId: string
+  input: string
+  output: string
+  tokensUsed: number
+  createdAt: string
+}
+
 export default function HistoryPage() {
-  const [records, setRecords] = useState<any[]>([])
+  const [records, setRecords] = useState<HistoryRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [selected, setSelected] = useState<any | null>(null)
+  const [selected, setSelected] = useState<HistoryRecord | null>(null)
 
   useEffect(() => {
-    loadRecords(page)
-  }, [page])
-
-  async function loadRecords(p: number) {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/ai/history?page=${p}`)
-      const data = await res.json()
-      if (data.records) {
-        setRecords(data.records)
-        setTotalPages(data.totalPages)
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/ai/history?page=${page}`)
+        const data = await res.json()
+        if (!cancelled && data.records) {
+          setRecords(data.records)
+          setTotalPages(data.totalPages)
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false)
-    }
-  }
+    })()
+    return () => { cancelled = true }
+  }, [page])
 
   return (
     <div className="flex min-h-screen">

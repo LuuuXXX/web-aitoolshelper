@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { decrypt } from '@/lib/session'
 
-const protectedPaths = ['/dashboard', '/tools', '/pricing/payment', '/profile', '/history']
+const protectedPaths = ['/dashboard']
 const authPaths = ['/login', '/register']
 
 export default async function proxy(req: NextRequest) {
@@ -14,7 +13,7 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const sessionCookie = (await cookies()).get('session')?.value
+  const sessionCookie = req.cookies.get('session')?.value
   const session = await decrypt(sessionCookie)
 
   if (isProtected && !session?.userId) {

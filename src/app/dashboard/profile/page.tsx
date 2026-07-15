@@ -4,8 +4,21 @@ import { useState, useEffect } from 'react'
 import DashboardNav from '@/components/DashboardNav'
 import * as Icons from 'lucide-react'
 
+interface UserData {
+  id: string
+  email: string | null
+  phone: string | null
+  name: string | null
+  avatar: string | null
+  plan: string
+  planExpire: string | null
+  dailyLimit: number
+  usedToday: number
+  createdAt: string
+}
+
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<UserData | null>(null)
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)

@@ -3,6 +3,7 @@ import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { getSession } from './session'
 import { prisma } from './db'
+import { getDailyLimitByPlan } from '@/config/pricing'
 
 export const verifySession = cache(async () => {
   const session = await getSession()
@@ -54,14 +55,5 @@ export function isPremiumUser(user: {
 }
 
 export function getDailyLimit(plan: string): number {
-  switch (plan) {
-    case 'monthly':
-      return 100
-    case 'quarterly':
-      return 100
-    case 'yearly':
-      return 200
-    default:
-      return 10
-  }
+  return getDailyLimitByPlan(plan)
 }

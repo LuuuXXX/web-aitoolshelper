@@ -82,17 +82,17 @@ export default function DocsPage() {
                   </tr>
                   <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
                     <td className="p-3">月度会员</td>
-                    <td className="p-3">¥19/月</td>
+                    <td className="p-3">¥9.9/月</td>
                     <td className="p-3">100 次/天</td>
                   </tr>
                   <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
                     <td className="p-3">季度会员</td>
-                    <td className="p-3">¥49/季</td>
+                    <td className="p-3">¥29.9/季</td>
                     <td className="p-3">100 次/天</td>
                   </tr>
                   <tr>
                     <td className="p-3">年度会员</td>
-                    <td className="p-3">¥128/年</td>
+                    <td className="p-3">¥99/年</td>
                     <td className="p-3">200 次/天</td>
                   </tr>
                 </tbody>

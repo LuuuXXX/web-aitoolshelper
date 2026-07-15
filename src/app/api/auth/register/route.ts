@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createSession } from '@/lib/session'
-import { generateCode, isEmail, isPhone } from '@/lib/utils'
-import { sendVerificationCode } from '@/lib/email'
-import { sendSms } from '@/lib/sms'
+import { isEmail, isPhone } from '@/lib/utils'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { isEmailConfigured } from '@/lib/email'
+import { isSmsConfigured } from '@/lib/sms'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const limited = rateLimit(`register:${ip}`, 5, 60_000)
+    if (!limited.allowed) {
+      return NextResponse.json(
+        { error: '操作过于频繁，请稍后再试' },
+        { status: 429 }
+      )
+    }
+
     const body = await request.json()
     const { account, password, code, name } = body
 
@@ -34,8 +44,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '该账号已注册' }, { status: 409 })
     }
 
-    // 验证码校验
-    if (code) {
+    const verificationEnabled = (email && isEmailConfigured()) || (phone && isSmsConfigured())
+
+    if (verificationEnabled) {
+      if (!code) {
+        return NextResponse.json({ error: '请输入验证码' }, { status: 400 })
+      }
+
       const record = await prisma.verificationCode.findFirst({
         where: {
           target: account,
@@ -56,7 +71,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(password, 12)
     const user = await prisma.user.create({
       data: {
         email,

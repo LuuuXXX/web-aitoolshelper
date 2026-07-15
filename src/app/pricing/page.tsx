@@ -12,7 +12,7 @@ function PricingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const selectedPlan = searchParams.get('plan')
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ plan?: string } | null>(null)
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState('')
 
@@ -45,7 +45,7 @@ function PricingContent() {
         return
       }
       // Redirect to Alipay payment page
-      window.location.href = data.paymentUrl
+      window.location.assign(data.paymentUrl)
     } catch {
       setError('网络错误，请稍后重试')
     } finally {
@@ -59,7 +59,7 @@ function PricingContent() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">选择适合你的方案</h1>
-            <p style={{ color: 'var(--muted)' }}>低至 ¥0.35/天，畅享全部 AI 工具</p>
+            <p style={{ color: 'var(--muted)' }}>低至 ¥0.27/天，畅享全部 AI 工具</p>
           </div>
 
           {error && (
