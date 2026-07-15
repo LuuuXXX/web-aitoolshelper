@@ -83,45 +83,27 @@ npx prisma db push
 
 ---
 
-### 方案一：QQ邮箱（推荐，最简单）
+### 方案一：163邮箱（推荐）
 
-**优势**：免费，配置最简单，无需域名，每天可发几百封。
+**优势**：免费，配置简单，无需域名，到达率稳定。
 
 #### 配置步骤
 
-1. 登录 [QQ邮箱网页版](https://mail.qq.com/) → **设置** → **账户**
-2. 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务」
-3. 点击「**开启**」开启 SMTP 服务
-4. 按提示用手机发送短信验证，获取 **16位授权码**（非QQ密码）
-5. 保存授权码
+1. 登录 [163邮箱网页版](https://mail.163.com/) → **设置** → **POP3/SMTP/IMAP**
+2. 找到「SMTP 服务」，点击「**开启**」
+3. 按提示用手机发送短信验证，获取 **客户端授权码**（非邮箱登录密码）
+4. 保存授权码
 
 #### SMTP 信息
 
 | 项目 | 值 |
 |---|---|
-| 服务器 | `smtp.qq.com` |
-| 端口 | `465`（SSL） |
-| 用户名 | 你的QQ邮箱地址（如 `12345@qq.com`） |
-| 密码 | 16位授权码（非QQ登录密码） |
+| 服务器 | `smtp.163.com` |
+| 端口 | `465`（SSL）或 `994`（SSL） |
+| 用户名 | 你的163邮箱地址（如 `yourname@163.com`） |
+| 密码 | 客户端授权码（非邮箱登录密码） |
 
 #### 配置 .env
-
-```bash
-SMTP_HOST="smtp.qq.com"
-SMTP_PORT="465"
-SMTP_USER="你的QQ邮箱@qq.com"
-SMTP_PASS="16位授权码"
-SMTP_FROM="AI工具箱 <你的QQ邮箱@qq.com>"
-```
-
----
-
-### 方案二：163邮箱
-
-与QQ邮箱类似：
-
-1. 登录 [163邮箱](https://mail.163.com/) → **设置** → **POP3/SMTP/IMAP**
-2. 开启 SMTP 服务，获取客户端授权码
 
 ```bash
 SMTP_HOST="smtp.163.com"
@@ -129,6 +111,25 @@ SMTP_PORT="465"
 SMTP_USER="你的邮箱@163.com"
 SMTP_PASS="客户端授权码"
 SMTP_FROM="AI工具箱 <你的邮箱@163.com>"
+```
+
+---
+
+### 方案二：QQ邮箱
+
+与163邮箱类似：
+
+1. 登录 [QQ邮箱网页版](https://mail.qq.com/) → **设置** → **账户**
+2. 找到「POP3/IMAP/SMTP/Exchange/CardDAV/CalDAV服务」
+3. 点击「**开启**」开启 SMTP 服务
+4. 按提示用手机发送短信验证，获取 **16位授权码**
+
+```bash
+SMTP_HOST="smtp.qq.com"
+SMTP_PORT="465"
+SMTP_USER="你的QQ邮箱@qq.com"
+SMTP_PASS="16位授权码"
+SMTP_FROM="AI工具箱 <你的QQ邮箱@qq.com>"
 ```
 
 ---
