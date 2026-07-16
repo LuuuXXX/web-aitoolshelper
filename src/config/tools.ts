@@ -21,6 +21,7 @@ export interface Tool {
   systemPrompt: (input: Record<string, string>) => string
   userPrompt: (input: Record<string, string>) => string
   badge?: string
+  useCases?: string[]
 }
 
 export const CATEGORIES = [
@@ -38,6 +39,7 @@ export const TOOLS: Tool[] = [
     icon: 'FileText',
     category: 'writing',
     badge: '热门',
+    useCases: ['自媒体文章创作', 'SEO优化文章撰写', '行业分析报告', '公众号推文生成'],
     fields: [
       { key: 'topic', label: '文章主题', type: 'text', placeholder: '例如：人工智能在教育领域的应用', required: true },
       {
@@ -71,6 +73,7 @@ export const TOOLS: Tool[] = [
     icon: 'BookOpen',
     category: 'marketing',
     badge: '热门',
+    useCases: ['产品种草笔记', '探店体验分享', '好物推荐清单', '知识科普内容'],
     fields: [
       { key: 'product', label: '产品/主题', type: 'text', placeholder: '例如：一款保湿面霜', required: true },
       { key: 'sellingPoint', label: '核心卖点', type: 'textarea', placeholder: '产品的主要特点、优势等', rows: 3 },
@@ -97,6 +100,7 @@ export const TOOLS: Tool[] = [
     description: '生成高转化率的广告文案，适合各种渠道',
     icon: 'Megaphone',
     category: 'marketing',
+    useCases: ['朋友圈推广文案', '抖音短视频脚本', '电商详情页文案', '微博活动推广'],
     fields: [
       { key: 'product', label: '产品名称', type: 'text', required: true },
       { key: 'feature', label: '产品特点', type: 'textarea', placeholder: '详细描述产品的功能和优势', rows: 3, required: true },
@@ -124,6 +128,7 @@ export const TOOLS: Tool[] = [
     description: '将长文档快速浓缩为核心摘要',
     icon: 'ScrollText',
     category: 'office',
+    useCases: ['会议纪要提炼', '学术论文摘要', '长文新闻速读', '合同条款要点'],
     fields: [
       { key: 'content', label: '文档内容', type: 'textarea', placeholder: '粘贴需要总结的文章或文档内容...', rows: 8, required: true },
       {
@@ -148,6 +153,7 @@ export const TOOLS: Tool[] = [
     description: '高质量多语言翻译，支持中英日韩法德等',
     icon: 'Languages',
     category: 'office',
+    useCases: ['商务邮件翻译', '学术论文翻译', '产品说明书本地化', '旅行用语翻译'],
     fields: [
       { key: 'text', label: '原文内容', type: 'textarea', placeholder: '输入需要翻译的文本...', rows: 5, required: true },
       {
@@ -192,6 +198,7 @@ export const TOOLS: Tool[] = [
     icon: 'UserCheck',
     category: 'office',
     badge: '推荐',
+    useCases: ['应届生求职简历', '跨行业转行求职', '管理层竞聘简历', '远程工作岗位申请'],
     fields: [
       { key: 'resume', label: '你的简历内容', type: 'textarea', placeholder: '粘贴你的简历内容...', rows: 8, required: true },
       { key: 'position', label: '目标职位', type: 'text', placeholder: '例如：高级前端工程师', required: true },
@@ -205,6 +212,7 @@ export const TOOLS: Tool[] = [
     description: '快速生成专业的工作周报',
     icon: 'CalendarCheck',
     category: 'office',
+    useCases: ['互联网团队周报', '销售业绩周报', '项目进度汇报', '实习生工作周报'],
     fields: [
       { key: 'tasks', label: '本周完成的工作', type: 'textarea', placeholder: '列出本周完成的主要工作...', rows: 5, required: true },
       { key: 'plan', label: '下周计划（可选）', type: 'textarea', placeholder: '下周计划做的工作...', rows: 3 },
@@ -219,6 +227,7 @@ export const TOOLS: Tool[] = [
     description: 'AI辅助生成专业的商业计划书框架',
     icon: 'TrendingUp',
     category: 'office',
+    useCases: ['融资路演计划书', '创业大赛参赛方案', '新项目立项报告', '年度经营规划'],
     fields: [
       { key: 'project', label: '项目名称', type: 'text', placeholder: '例如：社区生鲜电商平台', required: true },
       { key: 'description', label: '项目简介', type: 'textarea', placeholder: '简要描述项目内容、目标市场等', rows: 4, required: true },
@@ -233,6 +242,7 @@ export const TOOLS: Tool[] = [
     description: '为品牌、产品、公司生成创意名称',
     icon: 'Sparkles',
     category: 'creative',
+    useCases: ['新品牌命名', 'APP应用上架名称', '商标注册参考', '公众号/小程序命名'],
     fields: [
       { key: 'type', label: '起名类型', type: 'select', options: [
         { label: '品牌名', value: '品牌' },
@@ -253,6 +263,7 @@ export const TOOLS: Tool[] = [
     description: '快速撰写专业的商务/工作邮件',
     icon: 'Mail',
     category: 'office',
+    useCases: ['商务合作洽谈', '求职应聘邮件', '客户跟进回访', '会议邀请通知'],
     fields: [
       { key: 'type', label: '邮件类型', type: 'select', options: [
         { label: '商务合作', value: '商务合作' },
@@ -274,6 +285,7 @@ export const TOOLS: Tool[] = [
     description: '古风诗词、现代诗歌、藏头诗自动生成',
     icon: 'Feather',
     category: 'creative',
+    useCases: ['生日祝福藏头诗', '婚礼贺词创作', '节日问候诗词', '个人抒情表达'],
     fields: [
       { key: 'type', label: '诗词类型', type: 'select', options: [
         { label: '七言绝句', value: '七言绝句' },
@@ -299,6 +311,7 @@ export const TOOLS: Tool[] = [
     description: '生成高转化的电商产品详情页文案',
     icon: 'ShoppingBag',
     category: 'marketing',
+    useCases: ['淘宝/京东详情页', '抖音带货文案', '社群团购推广', '跨境电商Listing'],
     fields: [
       { key: 'product', label: '产品名称', type: 'text', required: true },
       { key: 'features', label: '产品特点', type: 'textarea', placeholder: '列出产品的主要特点和卖点', rows: 4, required: true },

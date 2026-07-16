@@ -32,6 +32,33 @@ export function getToolMetadata(tool: Tool): Metadata {
   }
 }
 
+export function getBreadcrumbJsonLd(tool: Tool) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: '首页',
+        item: APP_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: '工具库',
+        item: `${APP_URL}/tools`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: tool.name,
+        item: `${APP_URL}/tools/${tool.id}`,
+      },
+    ],
+  }
+}
+
 export function getToolJsonLd(tool: Tool) {
   const category = CATEGORIES.find((c) => c.id === tool.category)
 

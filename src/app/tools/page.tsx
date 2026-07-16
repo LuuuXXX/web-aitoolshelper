@@ -27,9 +27,24 @@ export const metadata: Metadata = {
   },
 }
 
+const APP_URL = process.env.APP_URL || 'https://aitoolshelper.cn'
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: '首页', item: APP_URL },
+    { '@type': 'ListItem', position: 2, name: '工具库', item: `${APP_URL}/tools` },
+  ],
+}
+
 export default function ToolsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main className="flex-1 pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">

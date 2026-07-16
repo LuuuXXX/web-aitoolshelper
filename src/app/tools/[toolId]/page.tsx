@@ -4,7 +4,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Icon from '@/components/Icon'
 import { TOOLS, CATEGORIES, getToolById } from '@/config/tools'
-import { getToolMetadata, getToolJsonLd } from '@/lib/seo'
+import { getToolMetadata, getToolJsonLd, getBreadcrumbJsonLd } from '@/lib/seo'
 import { notFound } from 'next/navigation'
 import { Check, ArrowRight, Sparkles } from 'lucide-react'
 
@@ -38,12 +38,17 @@ export default async function ToolLandingPage({
   ).slice(0, 3)
 
   const jsonLd = getToolJsonLd(tool)
+  const breadcrumbLd = getBreadcrumbJsonLd(tool)
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
       <Navbar />
       <main className="flex-1 pt-16">
@@ -90,6 +95,23 @@ export default async function ToolLandingPage({
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
+          {tool.useCases && tool.useCases.length > 0 && (
+            <section className="mb-10">
+              <h2 className="text-xl font-bold mb-4">适用场景</h2>
+              <div className="flex flex-wrap gap-2">
+                {tool.useCases.map((useCase) => (
+                  <span
+                    key={useCase}
+                    className="px-4 py-2 rounded-lg text-sm"
+                    style={{ background: 'var(--color-brand-50)', color: 'var(--color-brand-600)' }}
+                  >
+                    {useCase}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="mb-10">
             <h2 className="text-xl font-bold mb-4">功能特点</h2>
