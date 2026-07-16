@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Icon from '@/components/Icon'
+import { getPlanLabel } from '@/config/pricing'
 import { Menu, LogOut } from 'lucide-react'
 
 interface UserInfo {
@@ -74,7 +75,7 @@ export default function DashboardNav() {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{user?.name || '用户'}</p>
               <p className="text-xs" style={{ color: 'var(--muted)' }}>
-                {user?.plan === 'free' ? '免费用户' : `${user?.plan === 'monthly' ? '月度' : user?.plan === 'quarterly' ? '季度' : '年度'}会员`}
+                {getPlanLabel(user?.plan || 'free')}
               </p>
             </div>
           </div>

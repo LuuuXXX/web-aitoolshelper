@@ -1,6 +1,7 @@
 import DashboardNav from '@/components/DashboardNav'
 import { TOOLS } from '@/config/tools'
 import { getCurrentUser, isPremiumUser } from '@/lib/dal'
+import { getPlanLabel } from '@/config/pricing'
 import Link from 'next/link'
 import Icon from '@/components/Icon'
 
@@ -20,7 +21,7 @@ export default async function DashboardPage() {
               欢迎回来，{user?.name || '用户'} 👋
             </h1>
             <p style={{ color: 'var(--muted)' }}>
-              {premium ? `你的${user?.plan === 'yearly' ? '年度' : user?.plan === 'quarterly' ? '季度' : '月度'}会员` : '免费体验中'}
+              {premium ? `你的${getPlanLabel(user?.plan || 'free')}` : '免费体验中'}
               {premium && user?.planExpire ? `，有效期至 ${new Date(user.planExpire).toLocaleDateString('zh-CN')}` : ''}
             </p>
           </div>
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
             <div className="card p-4">
               <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>当前套餐</p>
               <p className="text-2xl font-bold">
-                {user?.plan === 'free' ? '免费' : user?.plan === 'monthly' ? '月度' : user?.plan === 'quarterly' ? '季度' : '年度'}
+                {getPlanLabel(user?.plan || 'free', !premium)}
               </p>
               <p className="text-xs" style={{ color: 'var(--muted)' }}>会员</p>
             </div>

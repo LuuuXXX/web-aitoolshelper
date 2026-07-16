@@ -23,7 +23,7 @@ export const verifySession = cache(async () => {
 export const requireAuth = cache(async () => {
   const session = await verifySession()
   if (!session) {
-    redirect('/login')
+    redirect('/auth?mode=login')
   }
   return session
 })

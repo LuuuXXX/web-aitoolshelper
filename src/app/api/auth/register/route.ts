@@ -3,7 +3,6 @@ import { prisma } from '@/lib/db'
 import { createSession } from '@/lib/session'
 import { isEmail } from '@/lib/utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
-import { isEmailConfigured } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 
 export async function POST(request: NextRequest) {

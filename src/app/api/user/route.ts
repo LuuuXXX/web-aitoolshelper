@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifySession } from '@/lib/dal'
+import { z } from 'zod'
+
+const updateSchema = z.object({
+  name: z.string().trim().min(1).max(32).optional(),
+  avatar: z.string().url().max(500).optional().or(z.literal('').or(z.null())),
+})
 
 export async function GET() {
   try {
@@ -52,13 +58,17 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, avatar } = body
+    const parsed = updateSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: '输入不合法' }, { status: 400 })
+    }
+    const { name, avatar } = parsed.data
 
     const user = await prisma.user.update({
       where: { id: session.userId },
       data: {
         ...(name !== undefined && { name }),
-        ...(avatar !== undefined && { avatar }),
+        ...(avatar !== undefined && { avatar: avatar || null }),
       },
       select: {
         id: true,

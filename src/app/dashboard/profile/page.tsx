@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import DashboardNav from '@/components/DashboardNav'
+import { getPlanLabel } from '@/config/pricing'
 import * as Icons from 'lucide-react'
 
 interface UserData {
@@ -109,7 +110,7 @@ export default function ProfilePage() {
               <div>
                 <p style={{ color: 'var(--muted)' }}>当前套餐</p>
                 <p className="font-medium">
-                  {user.plan === 'free' ? '免费用户' : user.plan === 'monthly' ? '月度会员' : user.plan === 'quarterly' ? '季度会员' : '年度会员'}
+                  {getPlanLabel(user.plan)}
                 </p>
               </div>
               <div>

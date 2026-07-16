@@ -66,7 +66,8 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="text-lg font-bold mb-2">八、联系我们</h2>
-              <p>如有隐私相关问题，请通过以下方式联系我们。</p>
+              <p>如有隐私相关问题或需要删除账号，请通过以下方式联系我们：</p>
+              <p>邮箱：<a href="mailto:aitoolshelper@163.com" className="text-brand-500 hover:underline">aitoolshelper@163.com</a></p>
             </section>
           </div>
         </div>

@@ -29,6 +29,7 @@ export default function Footer() {
             <ul className="space-y-1">
               <li><Link href="/terms" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>服务条款</Link></li>
               <li><Link href="/privacy" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>隐私政策</Link></li>
+              <li><a href="mailto:aitoolshelper@163.com" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>联系我们</a></li>
             </ul>
           </div>
         </div>

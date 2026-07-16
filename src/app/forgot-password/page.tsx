@@ -82,7 +82,7 @@ export default function ForgotPasswordPage() {
         return
       }
       setSuccess(true)
-      setTimeout(() => router.push('/login'), 2000)
+      setTimeout(() => router.push('/auth?mode=login'), 2000)
     } catch {
       setError('网络错误，请稍后重试')
     } finally {

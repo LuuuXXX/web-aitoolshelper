@@ -6,6 +6,7 @@ interface RateLimitEntry {
 }
 
 const store = new Map<string, RateLimitEntry>()
+const MAX_STORE_SIZE = 10_000
 
 setInterval(() => {
   const now = Date.now()
@@ -23,6 +24,12 @@ export function rateLimit(
   const entry = store.get(key)
 
   if (!entry || entry.resetAt < now) {
+    if (store.size >= MAX_STORE_SIZE) {
+      const oldest = [...store.entries()].sort((a, b) => a[1].resetAt - b[1].resetAt)
+      for (let i = 0; i < 1000 && i < oldest.length; i++) {
+        store.delete(oldest[i][0])
+      }
+    }
     store.set(key, { count: 1, resetAt: now + windowMs })
     return { allowed: true, remaining: maxRequests - 1, resetAt: now + windowMs }
   }
@@ -36,12 +43,11 @@ export function rateLimit(
 }
 
 export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) {
-    const ips = forwarded.split(',').map((s) => s.trim())
-    return ips[ips.length - 1] || 'unknown'
-  }
   const real = request.headers.get('x-real-ip')
   if (real) return real.trim()
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) {
+    return forwarded.split(',')[0].trim()
+  }
   return 'unknown'
 }

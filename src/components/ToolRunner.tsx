@@ -103,6 +103,7 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
                 <textarea
                   className="input-field resize-y"
                   rows={field.rows || 3}
+                  maxLength={10000}
                   placeholder={field.placeholder}
                   value={values[field.key] || ''}
                   onChange={(e) => setField(field.key, e.target.value)}
@@ -111,6 +112,7 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
                 <input
                   type={field.type === 'number' ? 'number' : 'text'}
                   className="input-field"
+                  maxLength={500}
                   placeholder={field.placeholder}
                   value={values[field.key] || ''}
                   onChange={(e) => setField(field.key, e.target.value)}

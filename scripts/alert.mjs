@@ -34,7 +34,6 @@ if (!host || !user || !pass) {
 }
 
 const appName = env.APP_NAME || 'AI工具箱'
-const hostname = import.meta.url ? undefined : undefined
 
 const html = `
   <div style="max-width:480px;margin:0 auto;font-family:sans-serif;padding:24px;">

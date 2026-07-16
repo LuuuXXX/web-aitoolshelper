@@ -10,7 +10,9 @@ import { Loader2 } from 'lucide-react'
 function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [mode, setMode] = useState<'login' | 'register'>(
+    searchParams.get('mode') === 'register' ? 'register' : 'login'
+  )
 
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
@@ -20,11 +22,6 @@ function AuthForm() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [countdown, setCountdown] = useState(0)
-
-  useEffect(() => {
-    const m = searchParams.get('mode')
-    if (m === 'register') setMode('register')
-  }, [searchParams])
 
   useEffect(() => {
     if (countdown > 0) {
@@ -129,7 +126,7 @@ function AuthForm() {
             </p>
           </div>
 
-          <div className="card p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="card p-6 space-y-4">
             {error && (
               <div className="px-4 py-2.5 rounded-lg bg-red-50 text-red-600 text-sm dark:bg-red-900/20">
                 {error}
@@ -205,7 +202,7 @@ function AuthForm() {
               />
             </div>
 
-            <button type="button" onClick={handleSubmit} disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -215,7 +212,7 @@ function AuthForm() {
                 mode === 'login' ? '登录' : '注册'
               )}
             </button>
-          </div>
+          </form>
 
           <p className="text-center mt-4 text-sm" style={{ color: 'var(--muted)' }}>
             {mode === 'login' ? (

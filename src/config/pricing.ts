@@ -89,3 +89,13 @@ export function getDailyLimitByPlan(plan: string): number {
   const p = getPlanById(plan)
   return p?.dailyLimit ?? FREE_PLAN.dailyLimit
 }
+
+export function getPlanLabel(plan: string, expired: boolean = false): string {
+  if (plan === 'free' || expired) return '免费用户'
+  const labels: Record<string, string> = {
+    monthly: '月度会员',
+    quarterly: '季度会员',
+    yearly: '年度会员',
+  }
+  return labels[plan] || '免费用户'
+}
