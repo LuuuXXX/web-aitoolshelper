@@ -33,9 +33,11 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="mt-6 pt-6 border-t flex items-center justify-between text-xs" style={{ borderColor: 'var(--card-border)', color: 'var(--muted)' }}>
+        <div className="mt-6 pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-2 text-xs" style={{ borderColor: 'var(--card-border)', color: 'var(--muted)' }}>
           <p>© 2026 AI工具箱. 保留所有权利.</p>
-          <p>湘ICP备2026026989号-1</p>
+          <div className="flex items-center gap-3">
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" className="hover:text-brand-500">湘ICP备2026026989号-1</a>
+          </div>
         </div>
       </div>
     </footer>

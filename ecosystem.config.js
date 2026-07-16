@@ -10,7 +10,7 @@ module.exports = {
       },
       instances: 1,
       autorestart: true,
-      max_memory_restart: '512M',
+      max_memory_restart: '768M',
       error_file: '/root/luuux/pm2-logs/error.log',
       out_file: '/root/luuux/pm2-logs/out.log',
       log_file: '/root/luuux/pm2-logs/combined.log',
