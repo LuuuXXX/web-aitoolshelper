@@ -22,20 +22,31 @@ export default function ProfilePage() {
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     fetch('/api/user')
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.status === 401) {
+          window.location.href = '/auth?mode=login&redirect=/dashboard/profile'
+          return null
+        }
+        return r.json()
+      })
       .then((data) => {
-        if (data.user) {
+        if (data?.user) {
           setUser(data.user)
           setName(data.user.name || '')
+        } else if (data) {
+          setError('获取用户信息失败')
         }
       })
+      .catch(() => setError('网络错误'))
   }, [])
 
   async function handleSave() {
     setSaving(true)
+    setError('')
     try {
       const res = await fetch('/api/user', {
         method: 'PUT',
@@ -45,7 +56,12 @@ export default function ProfilePage() {
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || '保存失败')
       }
+    } catch {
+      setError('网络错误')
     } finally {
       setSaving(false)
     }
@@ -56,7 +72,11 @@ export default function ProfilePage() {
       <div className="flex min-h-screen">
         <DashboardNav />
         <main className="flex-1 pt-14 lg:pt-0 flex items-center justify-center">
-          <Icons.Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+          {error ? (
+            <p style={{ color: 'var(--muted)' }}>{error}</p>
+          ) : (
+            <Icons.Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+          )}
         </main>
       </div>
     )

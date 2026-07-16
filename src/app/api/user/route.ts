@@ -5,7 +5,7 @@ import { z } from 'zod'
 
 const updateSchema = z.object({
   name: z.string().trim().min(1).max(32).optional(),
-  avatar: z.string().url().max(500).optional().or(z.literal('').or(z.null())),
+  avatar: z.string().regex(/^https?:\/\//, 'URL must start with http').max(500).optional().or(z.literal('').or(z.null())),
 })
 
 export async function GET() {

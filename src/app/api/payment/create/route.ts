@@ -4,12 +4,19 @@ import { verifySession } from '@/lib/dal'
 import { generateOrderNo } from '@/lib/utils'
 import { createPayment, isAlipayConfigured } from '@/lib/alipay'
 import { getPlanById } from '@/config/pricing'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
     const session = await verifySession()
     if (!session) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
+    }
+
+    const ip = getClientIp(request)
+    const limited = rateLimit(`paycreate:${ip}`, 5, 60_000)
+    if (!limited.allowed) {
+      return NextResponse.json({ error: '操作过于频繁，请稍后再试' }, { status: 429 })
     }
 
     const body = await request.json()

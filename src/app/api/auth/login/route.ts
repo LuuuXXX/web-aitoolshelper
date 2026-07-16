@@ -19,8 +19,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { account, password } = body
 
-    if (!account || !password) {
+    if (!account || !password || typeof password !== 'string') {
       return NextResponse.json({ error: '请填写账号和密码' }, { status: 400 })
+    }
+
+    if (password.length > 128) {
+      return NextResponse.json({ error: '密码过长' }, { status: 400 })
     }
 
     if (!isEmail(account)) {

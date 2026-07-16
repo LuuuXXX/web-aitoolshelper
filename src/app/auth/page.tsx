@@ -103,7 +103,8 @@ function AuthForm() {
         setError(data.error || '操作失败')
         return
       }
-      router.push('/dashboard')
+      const redirectTo = searchParams.get('redirect') || '/dashboard'
+      router.push(redirectTo)
       router.refresh()
     } catch {
       setError('网络错误，请稍后重试')

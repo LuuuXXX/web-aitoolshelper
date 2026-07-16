@@ -33,9 +33,9 @@ DEEPSEEK_API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
 DEEPSEEK_BASE_URL="https://api.deepseek.com"
 
 # ───── 支付宝 ─────
-ALIPAY_APP_ID="2021006163658041"
-ALIPAY_APP_PRIVATE_KEY_PATH="/root/.secrets/应用私钥RSA2048-敏感数据，请妥善保管.txt"
-ALIPAY_ALIPAY_PUBLIC_KEY_PATH="/root/.secrets/alipayPublicKey_RSA2.txt"
+ALIPAY_APP_ID="你的支付宝应用ID"
+ALIPAY_APP_PRIVATE_KEY_PATH="/root/.secrets/你的应用私钥文件.txt"
+ALIPAY_ALIPAY_PUBLIC_KEY_PATH="/root/.secrets/支付宝公钥文件.txt"
 ALIPAY_SIGN_TYPE="RSA2"
 ALIPAY_GATEWAY="https://openapi.alipay.com/gateway.do"
 ALIPAY_NOTIFY_URL=""    # ← 绑定域名后填: https://aitoolshelper.cn/api/payment/notify
@@ -64,8 +64,8 @@ NODE_ENV="production"
 
 | 项目 | 值 |
 |---|---|
-| 实例 ID | `pgm-bp10p5t4t88e8x3e` |
-| 外网地址 | `pgm-bp10p5t4t88e8x3eto.pg.rds.aliyuncs.com:5432` |
+| 实例 ID | `你的RDS实例ID` |
+| 外网地址 | `你的RDS外网地址.pg.rds.aliyuncs.com:5432` |
 | 数据库名 | `aitoolshelper` |
 | 账号 | `aitoolshelper` |
 
@@ -162,8 +162,8 @@ crontab -e
 ## 部署流程（新服务器）
 
 ```bash
-git clone git@github.com:LuuuXXX/web-aitoolshelper.git
-cd web-aitoolshelper
+git clone git@github.com:你的用户名/你的仓库.git
+cd 你的仓库
 npm install
 cp .env.example .env    # 编辑填入实际配置
 npx prisma generate

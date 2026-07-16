@@ -11,8 +11,10 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const toolId = searchParams.get('toolId')
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1'))
-    const pageSize = Math.min(50, Math.max(1, parseInt(searchParams.get('pageSize') || '10')))
+    const rawPage = Number(searchParams.get('page')) || 1
+    const rawPageSize = Number(searchParams.get('pageSize')) || 10
+    const page = Math.max(1, Math.floor(rawPage))
+    const pageSize = Math.min(50, Math.max(1, Math.floor(rawPageSize)))
 
     const where: Record<string, unknown> = { userId: session.userId }
     if (toolId) where.toolId = toolId

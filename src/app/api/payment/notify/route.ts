@@ -3,9 +3,16 @@ import { prisma } from '@/lib/db'
 import { verifyNotification } from '@/lib/alipay'
 import { getPlanById } from '@/config/pricing'
 import { getDailyLimit } from '@/lib/dal'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request)
+    const limited = rateLimit(`notify:${ip}`, 30, 60_000)
+    if (!limited.allowed) {
+      return NextResponse.json({ msg: 'fail' }, { status: 429 })
+    }
+
     const formData = await request.formData()
     const params: Record<string, string> = {}
     formData.forEach((value, key) => {
@@ -37,33 +44,43 @@ export async function POST(request: NextRequest) {
       }
 
       const plan = getPlanById(order.plan)
-      if (!plan) {
-        return NextResponse.json({ msg: 'success' })
-      }
 
-      const expireDate = new Date()
-      expireDate.setDate(expireDate.getDate() + plan.durationDays)
+      await prisma.$transaction(async (tx) => {
+        const updated = await tx.order.updateMany({
+          where: { id: order.id, status: 'pending' },
+          data: {
+            status: 'paid',
+            tradeNo,
+            paidAt: new Date(),
+          },
+        })
 
-      const updated = await prisma.order.updateMany({
-        where: { id: order.id, status: 'pending' },
-        data: {
-          status: 'paid',
-          tradeNo,
-          paidAt: new Date(),
-        },
-      })
+        if (updated.count === 0) return
 
-      if (updated.count === 0) {
-        return NextResponse.json({ msg: 'success' })
-      }
+        if (!plan) {
+          console.error(`Plan not found for paid order ${outTradeNo}, plan=${order.plan}`)
+          return
+        }
 
-      await prisma.user.update({
-        where: { id: order.userId },
-        data: {
-          plan: plan.id,
-          planExpire: expireDate,
-          dailyLimit: getDailyLimit(plan.id),
-        },
+        const currentUser = await tx.user.findUnique({
+          where: { id: order.userId },
+          select: { planExpire: true },
+        })
+
+        const now = Date.now()
+        const baseTime = currentUser?.planExpire && currentUser.planExpire.getTime() > now
+          ? currentUser.planExpire.getTime()
+          : now
+        const expireDate = new Date(baseTime + plan.durationDays * 24 * 60 * 60 * 1000)
+
+        await tx.user.update({
+          where: { id: order.userId },
+          data: {
+            plan: plan.id,
+            planExpire: expireDate,
+            dailyLimit: getDailyLimit(plan.id),
+          },
+        })
       })
     }
 

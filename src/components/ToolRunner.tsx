@@ -18,7 +18,11 @@ type ToolClientData = {
 
 export default function ToolRunner({ tool }: { tool: ToolClientData }) {
   const router = useRouter()
-  const [values, setValues] = useState<Record<string, string>>({})
+  const defaultValues: Record<string, string> = {}
+  for (const f of tool.fields) {
+    if (f.defaultValue) defaultValues[f.key] = f.defaultValue
+  }
+  const [values, setValues] = useState<Record<string, string>>(defaultValues)
   const [loading, setLoading] = useState(false)
   const [output, setOutput] = useState('')
   const [error, setError] = useState('')
@@ -34,7 +38,8 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
     setOutput('')
 
     for (const field of tool.fields) {
-      if (field.required && !values[field.key]?.trim()) {
+      const val = values[field.key] ?? field.defaultValue ?? ''
+      if (field.required && !String(val).trim()) {
         setError(`请填写${field.label}`)
         return
       }
@@ -45,7 +50,7 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
       const res = await fetch('/api/ai/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toolId: tool.id, input: values }),
+        body: JSON.stringify({ toolId: tool.id, input: { ...defaultValues, ...values} }),
       })
       const data = await res.json()
       if (!res.ok) {

@@ -17,7 +17,7 @@ export const verifySession = cache(async () => {
   if (!user || user.tokenVersion !== (session.tokenVersion ?? 0)) {
     return null
   }
-  return { isAuth: true, userId: session.userId, role: session.role ?? user.role }
+  return { isAuth: true, userId: session.userId, role: user.role }
 })
 
 export const requireAuth = cache(async () => {

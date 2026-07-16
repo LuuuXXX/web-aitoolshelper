@@ -53,16 +53,23 @@ export async function chatCompletion(
       Authorization: `Bearer ${API_KEY}`,
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(60_000),
+  }).catch((err: unknown) => {
+    if (err instanceof Error && err.name === 'TimeoutError') {
+      throw new Error('AI_SERVICE_TIMEOUT')
+    }
+    throw err
   })
 
   if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`DeepSeek API error: ${response.status} - ${error}`)
+    const errorText = await response.text().catch(() => 'unknown')
+    console.error(`DeepSeek API error: ${response.status} - ${errorText}`)
+    throw new Error('AI_SERVICE_ERROR')
   }
 
   const data = await response.json()
-  const content = data.choices[0]?.message?.content || ''
-  const tokensUsed = data.usage?.total_tokens || 0
+  const content = data.choices?.[0]?.message?.content ?? ''
+  const tokensUsed = data.usage?.total_tokens ?? 0
 
   return { content, tokensUsed }
 }

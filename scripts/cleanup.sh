@@ -105,6 +105,21 @@ if ! pm2 pid "$APP_NAME" > /dev/null 2>&1; then
   send_alert "应用进程已恢复" "PM2 检测到进程掉线，已尝试自动恢复。"
 fi
 
+# 7. Purge expired verification codes
+if [ -n "$DATABASE_URL" ]; then
+  node -e "
+    const { Pool } = require('pg');
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    pool.query(\"DELETE FROM verification_codes WHERE \\\"expiresAt\\\" < NOW() - INTERVAL '1 day'\")
+      .then(r => console.log('Purged ' + r.rowCount + ' expired verification codes'))
+      .catch(() => {})
+      .finally(() => pool.end());
+  " >> "$LOG_FILE" 2>&1
+fi
+
+# 8. Lock down backup file permissions
+chmod 600 "$BACKUP_DIR"/db_*.sql.gz 2>/dev/null || true
+
 if [ "$HAS_ERROR" -eq 0 ]; then
   log "Cleanup completed - all OK"
 fi

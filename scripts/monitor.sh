@@ -58,5 +58,14 @@ fi
 if ! pm2 pid "$APP_NAME" > /dev/null 2>&1; then
   log "CRITICAL: PM2 process down! Attempting restart..."
   pm2 resurrect >> "$LOG_FILE" 2>&1 || pm2 start /root/luuux/ecosystem.config.js >> "$LOG_FILE" 2>&1
-  send_alert "应用进程已恢复" "PM2 检测到进程掉线，已自动恢复。"
+  send_alert "应用进程已恢复" "PM2 检测到进程掉线，已尝试自动恢复。"
+fi
+
+# 4. HTTP health check (app alive but hung?)
+if pm2 pid "$APP_NAME" > /dev/null 2>&1; then
+  if ! curl -sf "http://localhost:3000/api/health" >/dev/null 2>&1; then
+    log "CRITICAL: App not responding to health check! Restarting..."
+    send_alert "应用无响应" "健康检查失败，应用可能已挂起，已自动重启。"
+    pm2 restart "$APP_NAME" >> "$LOG_FILE" 2>&1
+  fi
 fi

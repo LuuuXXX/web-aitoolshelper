@@ -6,6 +6,8 @@ import { getToolById } from '@/config/tools'
 import { getDailyLimitByPlan, FREE_PLAN } from '@/config/pricing'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
+const MAX_INPUT_LENGTH = 8000
+
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request)
@@ -30,6 +32,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '工具不存在' }, { status: 404 })
     }
 
+    const userInput = typeof input === 'object' && input !== null && !Array.isArray(input) ? input : {}
+
+    for (const field of tool.fields) {
+      const val = userInput[field.key]
+      if (field.required && (!val || !String(val).trim())) {
+        return NextResponse.json({ error: `请填写${field.label}` }, { status: 400 })
+      }
+      if (typeof val === 'string' && val.length > MAX_INPUT_LENGTH) {
+        return NextResponse.json({ error: `${field.label}内容过长，请精简后重试` }, { status: 400 })
+      }
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
     })
@@ -40,7 +54,6 @@ export async function POST(request: NextRequest) {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const isNewDay = !user.lastUseDate || user.lastUseDate < today
 
     const premium = isPremiumUser(user)
     const effectiveLimit = premium
@@ -54,36 +67,30 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const updated = isNewDay
-      ? await prisma.user.updateMany({
-          where: { id: user.id },
-          data: { usedToday: 1, lastUseDate: today },
-        })
-      : await prisma.user.updateMany({
-          where: { id: user.id, usedToday: { lt: effectiveLimit } },
-          data: { usedToday: { increment: 1 } },
-        })
+    const isNewDay = !user.lastUseDate || user.lastUseDate < today
 
-    if (!isNewDay && updated.count === 0) {
+    if (isNewDay) {
+      await prisma.user.updateMany({
+        where: { id: user.id, OR: [{ lastUseDate: { lt: today } }, { lastUseDate: null }] },
+        data: { usedToday: 0, lastUseDate: today },
+      })
+    }
+
+    const updated = await prisma.user.updateMany({
+      where: { id: user.id, usedToday: { lt: effectiveLimit } },
+      data: { usedToday: { increment: 1 } },
+    })
+
+    if (updated.count === 0) {
       return NextResponse.json(
         { error: '今日使用次数已达上限，升级会员可获得更多次数', needUpgrade: true },
         { status: 403 }
       )
     }
 
-    for (const field of tool.fields) {
-      if (field.required && !input[field.key]?.trim()) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { usedToday: { decrement: 1 } },
-        })
-        return NextResponse.json({ error: `请填写${field.label}` }, { status: 400 })
-      }
-    }
-
     const messages = [
-      { role: 'system' as const, content: tool.systemPrompt(input) },
-      { role: 'user' as const, content: tool.userPrompt(input) },
+      { role: 'system' as const, content: tool.systemPrompt(userInput) },
+      { role: 'user' as const, content: tool.userPrompt(userInput) },
     ]
 
     let output: string
@@ -95,25 +102,34 @@ export async function POST(request: NextRequest) {
       })
       output = result.content
       tokensUsed = result.tokensUsed
-    } catch (aiErr) {
-      await prisma.user.update({
-        where: { id: user.id },
+    } catch {
+      await prisma.user.updateMany({
+        where: { id: user.id, usedToday: { gt: 0 } },
         data: { usedToday: { decrement: 1 } },
       })
-      throw aiErr
+      return NextResponse.json(
+        { error: 'AI 服务暂时不可用，请稍后重试' },
+        { status: 502 }
+      )
     }
 
     const record = await prisma.toolRecord.create({
       data: {
         userId: user.id,
         toolId,
-        input: JSON.stringify(input),
+        input: JSON.stringify(userInput),
         output,
         tokensUsed,
       },
     })
 
-    const currentUsed = isNewDay ? 1 : user.usedToday + 1
+    const freshUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { usedToday: true, lastUseDate: true },
+    })
+    const currentUsed = (!freshUser?.lastUseDate || freshUser.lastUseDate < today)
+      ? 1
+      : freshUser.usedToday
 
     return NextResponse.json({
       success: true,
@@ -123,7 +139,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (err) {
     console.error('AI tool error:', err)
-    const message = err instanceof Error ? err.message : '处理失败，请稍后重试'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: '处理失败，请稍后重试' }, { status: 500 })
   }
 }

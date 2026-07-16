@@ -23,8 +23,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请填写完整信息' }, { status: 400 })
     }
 
-    if (password.length < 8) {
+    if (typeof password !== 'string' || password.length < 8) {
       return NextResponse.json({ error: '密码至少 8 位' }, { status: 400 })
+    }
+
+    if (password.length > 128) {
+      return NextResponse.json({ error: '密码过长' }, { status: 400 })
+    }
+
+    if (typeof name === 'string' && name.length > 32) {
+      return NextResponse.json({ error: '昵称过长' }, { status: 400 })
     }
 
     if (!isEmail(account)) {
@@ -41,6 +49,11 @@ export async function POST(request: NextRequest) {
 
     if (!code) {
       return NextResponse.json({ error: '请输入验证码' }, { status: 400 })
+    }
+
+    const attemptLimited = rateLimit(`verify:${account}`, 5, 300_000)
+    if (!attemptLimited.allowed) {
+      return NextResponse.json({ error: '验证尝试次数过多，请5分钟后再试' }, { status: 429 })
     }
 
     const record = await prisma.verificationCode.findFirst({
@@ -63,20 +76,22 @@ export async function POST(request: NextRequest) {
     let user
     try {
       user = await prisma.$transaction(async (tx) => {
-        await tx.verificationCode.update({
-          where: { id: record.id },
+        const consumed = await tx.verificationCode.updateMany({
+          where: { id: record.id, used: false },
           data: { used: true },
         })
+        if (consumed.count === 0) throw new Error('code_already_used')
+
         return tx.user.create({
           data: {
             email: account,
             passwordHash,
-            name: name || account.split('@')[0],
+            name: typeof name === 'string' ? (name || account.split('@')[0]) : account.split('@')[0],
           },
         })
       })
     } catch {
-      return NextResponse.json({ error: '注册失败，该邮箱可能已被注册' }, { status: 409 })
+      return NextResponse.json({ error: '注册失败，验证码可能已被使用或邮箱已注册' }, { status: 409 })
     }
 
     await createSession(user.id, user.role, user.tokenVersion)

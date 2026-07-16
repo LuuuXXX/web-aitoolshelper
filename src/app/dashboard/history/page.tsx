@@ -24,20 +24,26 @@ export default function HistoryPage() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [selected, setSelected] = useState<HistoryRecord | null>(null)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       setLoading(true)
+      setError('')
       try {
         const res = await fetch(`/api/ai/history?page=${page}`)
+        if (res.status === 401) {
+          window.location.href = '/auth?mode=login&redirect=/dashboard/history'
+          return
+        }
         const data = await res.json()
         if (!cancelled && data.records) {
           setRecords(data.records)
           setTotalPages(data.totalPages)
         }
       } catch {
-        // ignore
+        if (!cancelled) setError('加载失败，请稍后重试')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -55,6 +61,11 @@ export default function HistoryPage() {
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Icons.Loader2 className="w-8 h-8 text-brand-500 animate-spin" />
+            </div>
+          ) : error ? (
+            <div className="card p-12 text-center">
+              <p className="mb-4" style={{ color: 'var(--muted)' }}>{error}</p>
+              <button onClick={() => setPage(page)} className="btn-primary inline-block">重试</button>
             </div>
           ) : records.length === 0 ? (
             <div className="card p-12 text-center">

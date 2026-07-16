@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
     }
 
+    const targetLimited = rateLimit(`sendcode:${target}`, 5, 3600_000)
+    if (!targetLimited.allowed) {
+      return NextResponse.json({ error: '该邮箱发送次数已达上限，请明天再试' }, { status: 429 })
+    }
+
     const recent = await prisma.verificationCode.findFirst({
       where: {
         target,
@@ -33,6 +38,16 @@ export async function POST(request: NextRequest) {
     })
     if (recent) {
       return NextResponse.json({ error: '发送太频繁，请60秒后再试' }, { status: 429 })
+    }
+
+    if (type === 'reset') {
+      const existing = await prisma.user.findUnique({
+        where: { email: target },
+        select: { id: true },
+      })
+      if (!existing) {
+        return NextResponse.json({ success: true, message: '如果该邮箱已注册，验证码已发送' })
+      }
     }
 
     const code = generateCode()

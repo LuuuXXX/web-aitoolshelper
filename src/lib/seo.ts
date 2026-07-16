@@ -75,11 +75,6 @@ export function getToolJsonLd(tool: Tool) {
       priceCurrency: 'CNY',
       description: '免费使用，升级会员获得更多额度',
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '100',
-    },
     featureList: tool.fields.map((f) => f.label),
     faqPage: {
       '@type': 'FAQPage',

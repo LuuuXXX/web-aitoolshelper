@@ -65,7 +65,7 @@ model ToolRecord {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([toolId])
+  @@index([userId, createdAt])
   @@map("tool_records")
 }
 
@@ -79,5 +79,6 @@ model VerificationCode {
   createdAt DateTime @default(now())
 
   @@index([target])
+  @@index([target, createdAt])
   @@map("verification_codes")
 }

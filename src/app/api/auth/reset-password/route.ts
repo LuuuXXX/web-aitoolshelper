@@ -22,12 +22,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '请填写完整信息' }, { status: 400 })
     }
 
-    if (newPassword.length < 8) {
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
       return NextResponse.json({ error: '密码至少 8 位' }, { status: 400 })
+    }
+
+    if (newPassword.length > 128) {
+      return NextResponse.json({ error: '密码过长' }, { status: 400 })
     }
 
     if (!isEmail(account)) {
       return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
+    }
+
+    const attemptLimited = rateLimit(`verify:${account}`, 5, 300_000)
+    if (!attemptLimited.allowed) {
+      return NextResponse.json({ error: '验证尝试次数过多，请5分钟后再试' }, { status: 429 })
     }
 
     const record = await prisma.verificationCode.findFirst({
@@ -55,19 +64,25 @@ export async function POST(request: NextRequest) {
 
     const passwordHash = await bcrypt.hash(newPassword, 12)
 
-    await prisma.$transaction([
-      prisma.verificationCode.update({
-        where: { id: record.id },
-        data: { used: true },
-      }),
-      prisma.user.update({
-        where: { id: user.id },
-        data: {
-          passwordHash,
-          tokenVersion: { increment: 1 },
-        },
-      }),
-    ])
+    try {
+      await prisma.$transaction(async (tx) => {
+        const consumed = await tx.verificationCode.updateMany({
+          where: { id: record.id, used: false },
+          data: { used: true },
+        })
+        if (consumed.count === 0) throw new Error('code_already_used')
+
+        await tx.user.update({
+          where: { id: user.id },
+          data: {
+            passwordHash,
+            tokenVersion: { increment: 1 },
+          },
+        })
+      })
+    } catch {
+      return NextResponse.json({ error: '验证码无效或已使用' }, { status: 400 })
+    }
 
     return NextResponse.json({ success: true, message: '密码重置成功' })
   } catch (err) {

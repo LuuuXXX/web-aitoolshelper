@@ -30,6 +30,7 @@ function getAlipayClient(): AlipaySdk {
     alipayPublicKey,
     signType: (process.env.ALIPAY_SIGN_TYPE || 'RSA2') as 'RSA2',
     gateway: process.env.ALIPAY_GATEWAY || 'https://openapi.alipay.com/gateway.do',
+    timeout: 15000,
   })
 
   return client
