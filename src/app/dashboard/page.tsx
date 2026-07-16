@@ -57,7 +57,7 @@ export default async function DashboardPage() {
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <h3 className="text-lg font-bold mb-1">升级会员，解锁更多功能</h3>
-                  <p className="text-sm text-white/80">每月仅需 ¥9.9，即可享受每日 100 次使用额度</p>
+                  <p className="text-sm text-white/80">每月仅需 ¥19.9，即可享受每日 50 次使用额度</p>
                 </div>
                 <Link href="/pricing" className="px-6 py-2.5 rounded-lg bg-white text-brand-600 font-medium hover:bg-white/90 transition-colors">
                   查看套餐

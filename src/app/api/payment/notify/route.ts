@@ -30,6 +30,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ msg: 'success' })
       }
 
+      const paidAmount = parseFloat(params.total_amount || '0')
+      if (Math.abs(paidAmount - Number(order.amount)) > 0.01) {
+        console.error(`Payment amount mismatch: order ${outTradeNo} expected ${order.amount}, got ${paidAmount}`)
+        return NextResponse.json({ msg: 'fail' }, { status: 400 })
+      }
+
       const plan = getPlanById(order.plan)
       if (!plan) {
         return NextResponse.json({ msg: 'success' })
@@ -38,24 +44,27 @@ export async function POST(request: NextRequest) {
       const expireDate = new Date()
       expireDate.setDate(expireDate.getDate() + plan.durationDays)
 
-      await prisma.$transaction([
-        prisma.order.update({
-          where: { id: order.id },
-          data: {
-            status: 'paid',
-            tradeNo,
-            paidAt: new Date(),
-          },
-        }),
-        prisma.user.update({
-          where: { id: order.userId },
-          data: {
-            plan: plan.id,
-            planExpire: expireDate,
-            dailyLimit: getDailyLimit(plan.id),
-          },
-        }),
-      ])
+      const updated = await prisma.order.updateMany({
+        where: { id: order.id, status: 'pending' },
+        data: {
+          status: 'paid',
+          tradeNo,
+          paidAt: new Date(),
+        },
+      })
+
+      if (updated.count === 0) {
+        return NextResponse.json({ msg: 'success' })
+      }
+
+      await prisma.user.update({
+        where: { id: order.userId },
+        data: {
+          plan: plan.id,
+          planExpire: expireDate,
+          dailyLimit: getDailyLimit(plan.id),
+        },
+      })
     }
 
     return NextResponse.json({ msg: 'success' })

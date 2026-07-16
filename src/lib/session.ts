@@ -11,7 +11,7 @@ const encodedKey = new TextEncoder().encode(secretKey)
 export interface SessionPayload {
   userId: string
   role: string
-  expiresAt: number
+  tokenVersion: number
 }
 
 export async function encrypt(payload: SessionPayload) {
@@ -33,9 +33,9 @@ export async function decrypt(session: string | undefined = ''): Promise<Session
   }
 }
 
-export async function createSession(userId: string, role: string = 'user') {
+export async function createSession(userId: string, role: string = 'user', tokenVersion: number = 0) {
   const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000
-  const session = await encrypt({ userId, role, expiresAt })
+  const session = await encrypt({ userId, role, tokenVersion })
   const cookieStore = await cookies()
   cookieStore.set('session', session, {
     httpOnly: true,

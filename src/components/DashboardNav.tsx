@@ -87,7 +87,7 @@ export default function DashboardNav() {
               <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--card-border)' }}>
                 <div
                   className="h-full gradient-bg transition-all"
-                  style={{ width: `${Math.min((user.usedToday / user.dailyLimit) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((user.usedToday / (user.dailyLimit || 1)) * 100, 100)}%` }}
                 />
               </div>
             </div>

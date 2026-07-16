@@ -5,6 +5,7 @@ if (!API_KEY) {
   throw new Error('DEEPSEEK_API_KEY environment variable is required')
 }
 const BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
+const DEFAULT_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -22,11 +23,28 @@ export async function chatCompletion(
     model?: string
     temperature?: number
     maxTokens?: number
+    thinking?: boolean
   }
 ): Promise<ChatResult> {
-  const model = options?.model || 'deepseek-chat'
+  const model = options?.model || DEFAULT_MODEL
   const temperature = options?.temperature ?? 0.7
   const maxTokens = options?.maxTokens ?? 4096
+  const thinking = options?.thinking ?? false
+
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    max_tokens: maxTokens,
+    stream: false,
+  }
+
+  if (thinking) {
+    body.thinking = { type: 'enabled' }
+    body.reasoning_effort = 'high'
+  } else {
+    body.thinking = { type: 'disabled' }
+    body.temperature = temperature
+  }
 
   const response = await fetch(`${BASE_URL}/v1/chat/completions`, {
     method: 'POST',
@@ -34,13 +52,7 @@ export async function chatCompletion(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${API_KEY}`,
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      stream: false,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {

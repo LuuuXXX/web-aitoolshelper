@@ -40,24 +40,25 @@ export async function GET(request: NextRequest) {
           const expireDate = new Date()
           expireDate.setDate(expireDate.getDate() + plan.durationDays)
 
-          await prisma.$transaction([
-            prisma.order.update({
-              where: { id: order.id },
-              data: {
-                status: 'paid',
-                tradeNo: result.tradeNo,
-                paidAt: new Date(),
-              },
-            }),
-            prisma.user.update({
+          const updated = await prisma.order.updateMany({
+            where: { id: order.id, status: 'pending' },
+            data: {
+              status: 'paid',
+              tradeNo: result.tradeNo,
+              paidAt: new Date(),
+            },
+          })
+
+          if (updated.count > 0) {
+            await prisma.user.update({
               where: { id: order.userId },
               data: {
                 plan: plan.id,
                 planExpire: expireDate,
                 dailyLimit: getDailyLimit(plan.id),
               },
-            }),
-          ])
+            })
+          }
         }
         return NextResponse.json({ success: true, status: 'paid' })
       }

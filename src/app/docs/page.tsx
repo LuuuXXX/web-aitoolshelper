@@ -3,8 +3,11 @@ import Footer from '@/components/Footer'
 import { TOOLS, CATEGORIES } from '@/config/tools'
 
 export const metadata = {
-  title: '使用文档 - AI工具箱',
-  description: 'AI工具箱完整使用指南',
+  title: '使用文档',
+  description: 'AI工具箱完整使用指南 - 快速开始、注册登录、工具使用、套餐订阅、支付说明及常见问题解答。',
+  alternates: {
+    canonical: '/docs',
+  },
 }
 
 export default function DocsPage() {
@@ -83,18 +86,18 @@ export default function DocsPage() {
                   </tr>
                   <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
                     <td className="p-3">月度会员</td>
-                    <td className="p-3">¥9.9/月</td>
-                    <td className="p-3">100 次/天</td>
+                    <td className="p-3">¥19.9/月</td>
+                    <td className="p-3">50 次/天</td>
                   </tr>
                   <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
                     <td className="p-3">季度会员</td>
-                    <td className="p-3">¥29.9/季</td>
-                    <td className="p-3">100 次/天</td>
+                    <td className="p-3">¥59/季</td>
+                    <td className="p-3">50 次/天</td>
                   </tr>
                   <tr>
                     <td className="p-3">年度会员</td>
-                    <td className="p-3">¥99/年</td>
-                    <td className="p-3">200 次/天</td>
+                    <td className="p-3">¥168/年</td>
+                    <td className="p-3">80 次/天</td>
                   </tr>
                 </tbody>
               </table>
@@ -107,7 +110,7 @@ export default function DocsPage() {
             <div className="space-y-3 text-sm leading-relaxed">
               <p>目前支持<strong>支付宝</strong>支付。选择套餐后点击「支付宝支付」即可跳转到支付宝收银台完成付款。</p>
               <p>支付成功后，会员权益将立即生效。如遇支付问题，请联系客服。</p>
-              <p>支持 7 天无理由退款（需未大量使用），请联系客服处理。</p>
+              <p>支持特殊情况退款（购买后未使用且在 24 小时内），请联系客服处理。</p>
             </div>
           </section>
 
@@ -128,7 +131,7 @@ export default function DocsPage() {
               </div>
               <div className="card p-4">
                 <h4 className="font-medium mb-1">Q: 可以退款吗？</h4>
-                <p style={{ color: 'var(--muted)' }}>A: 支持 7 天无理由退款（需未大量使用），请联系客服处理。</p>
+                <p style={{ color: 'var(--muted)' }}>A: 付费套餐为一次性付款，有效期满后自动恢复免费方案。如需退款（购买后未使用且 24 小时内），请联系客服处理。</p>
               </div>
             </div>
           </section>

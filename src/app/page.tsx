@@ -6,8 +6,29 @@ import { PLANS, FREE_PLAN } from '@/config/pricing'
 import Icon from '@/components/Icon'
 
 export default function HomePage() {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'AI工具箱',
+    description: '集合12+款AI实用工具，涵盖智能写作、营销文案、文档处理、翻译、简历优化等，让AI为你的工作和创作赋能。',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    offers: {
+      '@type': 'AggregateOffer',
+      lowPrice: '0',
+      highPrice: '168',
+      priceCurrency: 'CNY',
+      offerCount: PLANS.length + 1,
+    },
+    featureList: TOOLS.map((t) => t.name),
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
       <main className="flex-1 pt-16">
         {/* Hero */}

@@ -59,7 +59,7 @@ function PricingContent() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">选择适合你的方案</h1>
-            <p style={{ color: 'var(--muted)' }}>低至 ¥0.27/天，畅享全部 AI 工具</p>
+            <p style={{ color: 'var(--muted)' }}>低至 ¥0.46/天，畅享全部 AI 工具</p>
           </div>
 
           {error && (
@@ -167,7 +167,7 @@ function PricingContent() {
 
           <div className="mt-10 text-center text-sm" style={{ color: 'var(--muted)' }}>
             <p>支付即表示同意 <Link href="/terms" className="text-brand-500 hover:underline">服务条款</Link></p>
-            <p className="mt-2">支持支付宝支付 · 自动续费可随时取消 · 7天无理由退款</p>
+            <p className="mt-2">支持支付宝支付 · 有效期满自动恢复免费方案 · 如需退款请联系客服</p>
           </div>
         </div>
       </div>

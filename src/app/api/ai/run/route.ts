@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { verifySession } from '@/lib/dal'
+import { verifySession, isPremiumUser } from '@/lib/dal'
 import { chatCompletion } from '@/lib/deepseek'
 import { getToolById } from '@/config/tools'
+import { getDailyLimitByPlan, FREE_PLAN } from '@/config/pricing'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
@@ -29,7 +30,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '工具不存在' }, { status: 404 })
     }
 
-    // 获取用户并检查配额
     const user = await prisma.user.findUnique({
       where: { id: session.userId },
     })
@@ -40,48 +40,69 @@ export async function POST(request: NextRequest) {
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const isNewDay = !user.lastUseDate || user.lastUseDate < today
 
-    // 重置每日使用次数
-    if (!user.lastUseDate || user.lastUseDate < today) {
+    const premium = isPremiumUser(user)
+    const effectiveLimit = premium
+      ? getDailyLimitByPlan(user.plan)
+      : getDailyLimitByPlan('free')
+
+    if (!premium && user.plan !== 'free') {
       await prisma.user.update({
         where: { id: user.id },
-        data: { usedToday: 0, lastUseDate: today },
+        data: { plan: 'free', dailyLimit: FREE_PLAN.dailyLimit },
       })
-      user.usedToday = 0
     }
 
-    if (user.usedToday >= user.dailyLimit) {
+    const updated = isNewDay
+      ? await prisma.user.updateMany({
+          where: { id: user.id },
+          data: { usedToday: 1, lastUseDate: today },
+        })
+      : await prisma.user.updateMany({
+          where: { id: user.id, usedToday: { lt: effectiveLimit } },
+          data: { usedToday: { increment: 1 } },
+        })
+
+    if (!isNewDay && updated.count === 0) {
       return NextResponse.json(
         { error: '今日使用次数已达上限，升级会员可获得更多次数', needUpgrade: true },
         { status: 403 }
       )
     }
 
-    // 验证必填字段
     for (const field of tool.fields) {
       if (field.required && !input[field.key]?.trim()) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { usedToday: { decrement: 1 } },
+        })
         return NextResponse.json({ error: `请填写${field.label}` }, { status: 400 })
       }
     }
 
-    // 调用 AI
     const messages = [
       { role: 'system' as const, content: tool.systemPrompt(input) },
       { role: 'user' as const, content: tool.userPrompt(input) },
     ]
 
-    const { content: output, tokensUsed } = await chatCompletion(messages, {
-      temperature: 0.7,
-      maxTokens: 4096,
-    })
+    let output: string
+    let tokensUsed: number
+    try {
+      const result = await chatCompletion(messages, {
+        temperature: 0.7,
+        maxTokens: 4096,
+      })
+      output = result.content
+      tokensUsed = result.tokensUsed
+    } catch (aiErr) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { usedToday: { decrement: 1 } },
+      })
+      throw aiErr
+    }
 
-    // 更新使用次数
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { usedToday: { increment: 1 } },
-    })
-
-    // 保存记录
     const record = await prisma.toolRecord.create({
       data: {
         userId: user.id,
@@ -92,11 +113,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const currentUsed = isNewDay ? 1 : user.usedToday + 1
+
     return NextResponse.json({
       success: true,
       output,
       recordId: record.id,
-      remaining: user.dailyLimit - user.usedToday - 1,
+      remaining: Math.max(effectiveLimit - currentUsed, 0),
     })
   } catch (err) {
     console.error('AI tool error:', err)

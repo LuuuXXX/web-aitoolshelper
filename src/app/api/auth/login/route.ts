@@ -32,15 +32,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: '账号不存在，请先注册' }, { status: 404 })
+      await bcrypt.hash(password, 12)
+      return NextResponse.json({ error: '账号或密码错误' }, { status: 401 })
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash)
     if (!valid) {
-      return NextResponse.json({ error: '密码错误' }, { status: 401 })
+      return NextResponse.json({ error: '账号或密码错误' }, { status: 401 })
     }
 
-    await createSession(user.id, user.role)
+    await createSession(user.id, user.role, user.tokenVersion)
 
     return NextResponse.json({
       success: true,

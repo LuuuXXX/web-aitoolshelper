@@ -22,6 +22,8 @@ model User {
   dailyLimit    Int      @default(5)
   usedToday     Int      @default(0)
   lastUseDate   DateTime?
+  // session invalidation
+  tokenVersion  Int      @default(0)
   // timestamps
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json({ error: '账号不存在' }, { status: 404 })
+      return NextResponse.json({ error: '验证码无效或已过期' }, { status: 400 })
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 12)
@@ -62,7 +62,10 @@ export async function POST(request: NextRequest) {
       }),
       prisma.user.update({
         where: { id: user.id },
-        data: { passwordHash },
+        data: {
+          passwordHash,
+          tokenVersion: { increment: 1 },
+        },
       }),
     ])
 

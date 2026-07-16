@@ -10,7 +10,14 @@ export const verifySession = cache(async () => {
   if (!session?.userId) {
     return null
   }
-  return { isAuth: true, userId: session.userId, role: session.role }
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { role: true, tokenVersion: true },
+  })
+  if (!user || user.tokenVersion !== (session.tokenVersion ?? 0)) {
+    return null
+  }
+  return { isAuth: true, userId: session.userId, role: session.role ?? user.role }
 })
 
 export const requireAuth = cache(async () => {
@@ -38,6 +45,7 @@ export const getCurrentUser = cache(async () => {
       dailyLimit: true,
       usedToday: true,
       lastUseDate: true,
+      tokenVersion: true,
       createdAt: true,
     },
   })

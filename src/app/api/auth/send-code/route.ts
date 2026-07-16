@@ -13,7 +13,9 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { target, type = 'register' } = body
+    const { target, type: rawType = 'register' } = body
+
+    const type = rawType === 'register' || rawType === 'reset' ? rawType : 'register'
 
     if (!target) {
       return NextResponse.json({ error: '请输入邮箱' }, { status: 400 })

@@ -59,21 +59,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '验证码无效或已过期' }, { status: 400 })
     }
 
-    await prisma.verificationCode.update({
-      where: { id: record.id },
-      data: { used: true },
-    })
-
     const passwordHash = await bcrypt.hash(password, 12)
-    const user = await prisma.user.create({
-      data: {
-        email: account,
-        passwordHash,
-        name: name || account.split('@')[0],
-      },
-    })
 
-    await createSession(user.id, user.role)
+    let user
+    try {
+      user = await prisma.$transaction(async (tx) => {
+        await tx.verificationCode.update({
+          where: { id: record.id },
+          data: { used: true },
+        })
+        return tx.user.create({
+          data: {
+            email: account,
+            passwordHash,
+            name: name || account.split('@')[0],
+          },
+        })
+      })
+    } catch {
+      return NextResponse.json({ error: '注册失败，该邮箱可能已被注册' }, { status: 409 })
+    }
+
+    await createSession(user.id, user.role, user.tokenVersion)
 
     return NextResponse.json({
       success: true,
