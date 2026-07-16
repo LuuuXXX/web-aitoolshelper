@@ -1,7 +1,11 @@
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
-export const metadata = { title: '服务条款 - AI工具箱' }
+export const metadata = {
+  title: '服务条款',
+  description: 'AI工具箱服务条款 — 用户注册、使用规范、付费服务、知识产权及免责声明。',
+  alternates: { canonical: '/terms' },
+}
 
 export default function TermsPage() {
   return (

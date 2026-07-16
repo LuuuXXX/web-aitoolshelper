@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
+import { TOOLS } from '@/config/tools'
 
-const BASE_URL = process.env.APP_URL || 'https://luuux.com'
+const BASE_URL = process.env.APP_URL || 'https://aitoolshelper.cn'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
@@ -13,10 +14,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
+      url: `${BASE_URL}/tools`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${BASE_URL}/pricing`,
       lastModified: now,
       changeFrequency: 'monthly',
-      priority: 0.9,
+      priority: 0.8,
     },
     {
       url: `${BASE_URL}/docs`,
@@ -38,5 +45,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ]
 
-  return staticPages
+  const toolPages: MetadataRoute.Sitemap = TOOLS.map((tool) => ({
+    url: `${BASE_URL}/tools/${tool.id}`,
+    lastModified: now,
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }))
+
+  return [...staticPages, ...toolPages]
 }

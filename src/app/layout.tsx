@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const APP_URL = process.env.APP_URL || "https://luuux.com";
+const APP_URL = process.env.APP_URL || "https://aitoolshelper.cn";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

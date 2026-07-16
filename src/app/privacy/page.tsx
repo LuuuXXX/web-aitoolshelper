@@ -1,7 +1,11 @@
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
-export const metadata = { title: '隐私政策 - AI工具箱' }
+export const metadata = {
+  title: '隐私政策',
+  description: 'AI工具箱隐私政策 — 信息收集与使用、数据安全、Cookie使用及用户隐私保护说明。',
+  alternates: { canonical: '/privacy' },
+}
 
 export default function PrivacyPage() {
   return (

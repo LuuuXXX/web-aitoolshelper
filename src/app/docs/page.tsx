@@ -10,9 +10,52 @@ export const metadata = {
   },
 }
 
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '生成的内容质量不好怎么办？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '建议提供更详细的输入信息，或多次尝试不同的输入组合。AI 生成的内容可作为参考和灵感，结合个人修改效果更佳。',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '每日额度用完了怎么办？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '可升级到付费套餐获得更多额度（月度50次/天、季度50次/天、年度80次/天），额度每天 00:00 重置。',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '我的数据安全吗？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '所有数据传输使用 HTTPS 加密，密码使用 bcrypt 哈希存储，API 密钥安全保管，绝不泄露。',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '可以退款吗？',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '付费套餐为一次性付款，有效期满后自动恢复免费方案。如需退款（购买后未使用且 24 小时内），请联系客服处理。',
+      },
+    },
+  ],
+}
+
 export default function DocsPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <Navbar />
       <main className="flex-1 pt-16">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">

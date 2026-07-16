@@ -43,7 +43,7 @@ export default function HomePage() {
               {TOOLS.length}+ 款AI工具，持续更新中
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              让 <span className="gradient-text">AI</span> 为你的<br className="hidden md:block" />工作和创作赋能
+              免费 <span className="gradient-text">AI 工具箱</span><br className="hidden md:block" />写作 · 文案 · 翻译 · 办公
             </h1>
             <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto" style={{ color: 'var(--muted)' }}>
               集合 {TOOLS.length}+ 款开箱即用的 AI 应用工具，涵盖写作、营销、办公、创意等场景。
@@ -53,7 +53,7 @@ export default function HomePage() {
               <Link href="/auth?mode=register" className="btn-primary text-base px-8 py-3">
                 免费开始使用
               </Link>
-              <Link href="/#tools" className="px-8 py-3 rounded-lg border text-base transition-colors hover:border-brand-500"
+              <Link href="/tools" className="px-8 py-3 rounded-lg border text-base transition-colors hover:border-brand-500"
                 style={{ borderColor: 'var(--card-border)', color: 'var(--foreground)' }}>
                 浏览工具库
               </Link>
@@ -73,6 +73,11 @@ export default function HomePage() {
               <h2 className="text-3xl md:text-4xl font-bold mb-4">工具库</h2>
               <p style={{ color: 'var(--muted)' }}>选择你需要的AI工具，即刻开始</p>
             </div>
+            <div className="text-center mb-8">
+              <Link href="/tools" className="inline-flex items-center gap-1 text-sm text-brand-500 hover:underline">
+                查看全部 {TOOLS.length}+ 款工具 →
+              </Link>
+            </div>
 
             {CATEGORIES.map((category) => {
               const tools = TOOLS.filter((t) => t.category === category.id)
@@ -90,7 +95,7 @@ export default function HomePage() {
                     {tools.map((tool) => (
                       <Link
                         key={tool.id}
-                        href={`/dashboard/tools/${tool.id}`}
+                        href={`/tools/${tool.id}`}
                         className="card p-5 hover:border-brand-500 transition-all hover:shadow-lg group"
                       >
                         <div className="flex items-start justify-between mb-3">

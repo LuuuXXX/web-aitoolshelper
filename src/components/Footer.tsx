@@ -12,7 +12,7 @@ export default function Footer() {
           <div>
             <h4 className="font-medium mb-2" style={{ color: 'var(--muted)' }}>产品</h4>
             <ul className="space-y-1">
-              <li><Link href="/#tools" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>工具库</Link></li>
+              <li><Link href="/tools" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>工具库</Link></li>
               <li><Link href="/pricing" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>定价方案</Link></li>
               <li><Link href="/dashboard" className="hover:text-brand-500" style={{ color: 'var(--foreground)' }}>控制台</Link></li>
             </ul>

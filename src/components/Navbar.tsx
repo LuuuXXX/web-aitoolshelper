@@ -26,7 +26,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6">
-          <Link href="/#tools" className="text-sm hover:text-brand-500 transition-colors" style={{ color: 'var(--foreground)' }}>
+          <Link href="/tools" className="text-sm hover:text-brand-500 transition-colors" style={{ color: 'var(--foreground)' }}>
             工具库
           </Link>
           <Link href="/pricing" className="text-sm hover:text-brand-500 transition-colors" style={{ color: 'var(--foreground)' }}>
@@ -57,7 +57,7 @@ export default function Navbar() {
 
       {menuOpen && (
         <div className="md:hidden glass border-b px-4 py-4 space-y-3" style={{ borderColor: 'var(--card-border)' }}>
-          <Link href="/#tools" onClick={() => setMenuOpen(false)} className="block text-sm py-2" style={{ color: 'var(--foreground)' }}>
+          <Link href="/tools" onClick={() => setMenuOpen(false)} className="block text-sm py-2" style={{ color: 'var(--foreground)' }}>
             工具库
           </Link>
           <Link href="/pricing" onClick={() => setMenuOpen(false)} className="block text-sm py-2" style={{ color: 'var(--foreground)' }}>
