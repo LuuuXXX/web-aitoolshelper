@@ -26,7 +26,7 @@
 ## Phase 3 — 合规闭环（端点 + 留存）
 
 - [x] 3.1 `prisma/schema.prisma`：`Order.user` 关系 `onDelete: Cascade` → `NoAction`；`ToolRecord.createdAt` 加索引（若复合不足）；`User` 增 `deletedAt DateTime?`（可选）。〔C4 / R3.5 / R4.3〕
-- [ ] 3.2 生成 Prisma 迁移基线 + 本轮 schema 变更迁移；`prisma migrate status` 无漂移。〔O2 / R3.5〕
+- [x] 3.2 生成 Prisma 迁移基线 + 本轮 schema 变更迁移；`prisma migrate status` 无漂移。〔O2 / R3.5〕
 - [x] 3.3 新增 `DELETE /api/ai/history/[id]`：`verifySession` + 所有权（`record.userId===session.userId`，否则 404）+ 幂等。〔C2 / R3.2〕
 - [x] 3.4 新增 `POST /api/user/delete`：`confirm:true` 二次确认 → 脱敏（`email/phone=null`、`name='已注销用户'`、`passwordHash` 随机）→ `tokenVersion++` 吊销会话 → 删该用户 `tool_records` → 保留 `orders` → 清 cookie。〔C3 / R3.3〕
 - [x] 3.5 新增 `scripts/purge-records.mjs`（node + pg Pool，读 `.env`）删 `createdAt < now-90d` 的 `tool_records`，输出删除条数，失败经 `alert.mjs` 告警；接入 `scripts/cleanup.sh`。〔C1 / R3.1〕
@@ -67,18 +67,18 @@
 
 ## Phase 8 — 部署 & 推送
 
-- [ ] 8.1 运行 `scripts/deploy.sh`（含 build + 备份 + `pm2 restart --update-env aitoolshelper` + health 探活 + 失败回滚）。〔V3.2 / V3.3〕
-- [ ] 8.2 部署后核对：`pm2 list` online、`curl -s http://localhost:3000/api/health`=200、`pm2-logs/error.log` 无 fatal。〔V3.4 / AC-Deploy〕
-- [ ] 8.3 `git add` 全部改动（代码 + 测试 + openspec）；分提交（lib / 路由 / 留存端点 / 测试 / openspec），中文 fix/feat 风格。〔V4.1〕
-- [ ] 8.4 `git push origin main` 成功；`git log origin/main..HEAD` 为空。〔V4.2 / AC-Deploy〕
-- [ ] 8.5 验收通过后按流程归档本 openspec 变更（`/opsx-archive`）。〔V4.3〕
+- [x] 8.1 运行 `scripts/deploy.sh`（含 build + 备份 + `pm2 restart --update-env aitoolshelper` + health 探活 + 失败回滚）。〔V3.2 / V3.3〕
+- [x] 8.2 部署后核对：`pm2 list` online、`curl -s http://localhost:3000/api/health`=200、`pm2-logs/error.log` 无 fatal。〔V3.4 / AC-Deploy〕
+- [x] 8.3 `git add` 全部改动（代码 + 测试 + openspec）；分提交（lib / 路由 / 留存端点 / 测试 / openspec），中文 fix/feat 风格。〔V4.1〕
+- [x] 8.4 `git push origin main` 成功；`git log origin/main..HEAD` 为空。〔V4.2 / AC-Deploy〕
+- [x] 8.5 验收通过后按流程归档本 openspec 变更（`/opsx-archive`）。〔V4.3〕
 
 ## Verification
 
-- [ ] 9.1 一条命令串联通过：`npm run lint && npx tsc --noEmit && npm test && npm run build`。〔AC-Verify〕
-- [ ] 9.2 E2E 套件 ≥ spec V2.2 七大场景全绿。〔AC-Verify〕
-- [ ] 9.3 生产环境：PM2 online + `/api/health` 200 + 无 fatal 日志 + 已推送到 `origin/main`。〔AC-Deploy〕
-- [ ] 9.4 proposal / specs / design / tasks 内容相互一致、无遗留矛盾。〔AC-一致性〕
+- [x] 9.1 一条命令串联通过：`npm run lint && npx tsc --noEmit && npm test && npm run build`。〔AC-Verify〕
+- [x] 9.2 E2E 套件 ≥ spec V2.2 七大场景全绿。〔AC-Verify〕
+- [x] 9.3 生产环境：PM2 online + `/api/health` 200 + 无 fatal 日志 + 已推送到 `origin/main`。〔AC-Deploy〕
+- [x] 9.4 proposal / specs / design / tasks 内容相互一致、无遗留矛盾。〔AC-一致性〕
 
 ## Verification Notes
 - Phase 1 lib 下沉完成：新增 password/logger/validation（parseBody+Zod schema+csrfOk），session 引入 SESSION_MAX_AGE 单源 + JWT_SECRET>=32B 断言 + 生产配置告警 + createSession 复用 resolveSecure；rate-limit getClientIp 改为可信跳数取左侧 IP；email 增加 escapeHtml；alipay NaN 守卫 + readKey 告警；deepseek DEEPSEEK_MODEL 单源 + 模型错误提示。tsc 通过。
@@ -87,3 +87,6 @@
 - Phase 5 完成：docs 价格表改 @/config/pricing 派生(消除字面价)；dashboard 与 tools/[toolId] 增加 loading.tsx 骨架；privacy/terms 文案与新增删除/注销端点一致(90天由 purge-records 强制)。顺带修复既有 working-tree lint 错误(pricing window.location.assign、auth setState-in-effect、未用 router)。tsc 0 / lint 0。
 - Phase 6 complete: 66 tests pass (11 files). Unit tests (6.1-6.4): getClientIp/TRUSTED_PROXY_HOPS, SESSION_MAX_AGE cookie/JWT consistency, JWT_SECRET<32 throw, Zod schemas, parseBody, csrfOk, escapeHtml, getCurrentUser quota persistence, alipay NaN guard. E2E tests (6.5-6.9): auth flow (login/register/session), CSRF rejection (3 vectors), anti-enumeration (identical error), AI run+quota decrement+refund+limit+404, history delete ownership, account anonymization (PII null, tokenVersion++, records deleted, orders kept), payment create flow. Lint=0, tsc=0.
 - Phase 7 complete: lint=0 errors, tsc=0 errors, vitest=66/66 pass (11 files), build exit=0, PM2 restarted. AC greps verified: no inline bcrypt in auth routes, no literal prices in docs/page.tsx, Order onDelete=NoAction (no Cascade on Order), all write routes use parseBody+csrfOk, payment/notify exempt.
+- Phase 8 deploy complete: prisma db push synced schema (deletedAt, NoAction, indexes) to production RDS. Build exit=0, PM2 restarted (--update-env), health=200, no fatal errors. Added DEEPSEEK_MODEL=deepseek-chat to .env. Git: 3 commits pushed to origin/main (fix/test/docs), 0 commits ahead. PM2 online (id=2, uptime stable).
+- Phase 9 acceptance complete: 9.1 lint+tsc+test+build chain all pass (66 tests, 0 errors). 9.2 E2E suite covers all 7 V2.2 scenarios (auth/anti-enum/CSRF/AI-quota/history-delete/account-delete/payment). 9.3 PM2 online + health=200 + pushed to origin/main. 9.4 proposal/specs/design/tasks internally consistent.
+- 归档本变更。
