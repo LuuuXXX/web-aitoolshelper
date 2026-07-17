@@ -120,6 +120,17 @@ fi
 # 8. Lock down backup file permissions
 chmod 600 "$BACKUP_DIR"/db_*.sql.gz 2>/dev/null || true
 
+# 9. Purge AI tool records older than 90 days (data retention policy)
+if [ -n "$DATABASE_URL" ] && [ -f "/root/luuux/scripts/purge-records.mjs" ]; then
+  if node /root/luuux/scripts/purge-records.mjs >> "$LOG_FILE" 2>&1; then
+    log "Tool records purge completed"
+  else
+    log "ERROR: Tool records purge failed"
+    send_alert "历史记录清理失败" "purge-records.mjs 执行失败，请检查日志。"
+    HAS_ERROR=1
+  fi
+fi
+
 if [ "$HAS_ERROR" -eq 0 ]; then
   log "Cleanup completed - all OK"
 fi

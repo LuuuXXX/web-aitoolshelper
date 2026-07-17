@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
@@ -9,6 +9,7 @@ import { Loader2, CheckCircle } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
+  const redirectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [account, setAccount] = useState('')
   const [code, setCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -82,13 +83,19 @@ export default function ForgotPasswordPage() {
         return
       }
       setSuccess(true)
-      setTimeout(() => router.push('/auth?mode=login'), 2000)
+      redirectTimer.current = setTimeout(() => router.push('/auth?mode=login'), 3000)
     } catch {
       setError('网络错误，请稍后重试')
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (redirectTimer.current) clearTimeout(redirectTimer.current)
+    }
+  }, [])
 
   if (success) {
     return (
@@ -98,7 +105,8 @@ export default function ForgotPasswordPage() {
           <div className="w-full max-w-md text-center">
             <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
             <h1 className="text-2xl font-bold mb-2">密码重置成功</h1>
-            <p style={{ color: 'var(--muted)' }}>即将跳转到登录页...</p>
+            <p style={{ color: 'var(--muted)' }} className="mb-6">即将跳转到登录页...</p>
+            <Link href="/auth?mode=login" className="btn-primary inline-block">前往登录</Link>
           </div>
         </main>
       </>

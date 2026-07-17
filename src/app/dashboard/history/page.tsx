@@ -37,6 +37,10 @@ export default function HistoryPage() {
           window.location.href = '/auth?mode=login&redirect=/dashboard/history'
           return
         }
+        if (!res.ok) {
+          if (!cancelled) setError('加载失败，请稍后重试')
+          return
+        }
         const data = await res.json()
         if (!cancelled && data.records) {
           setRecords(data.records)

@@ -5,6 +5,8 @@ import { chatCompletion } from '@/lib/deepseek'
 import { getToolById } from '@/config/tools'
 import { getDailyLimitByPlan, FREE_PLAN } from '@/config/pricing'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { parseBody, aiRunSchema, csrfOk, csrfDenied } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 
 const MAX_INPUT_LENGTH = 8000
 
@@ -19,20 +21,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!csrfOk(request)) return csrfDenied()
+
     const session = await verifySession()
     if (!session) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const { toolId, input } = body
+    const body = await parseBody(aiRunSchema, request)
+    if (!body.ok) return body.response
+    const { toolId, input: rawInput } = body.data
 
     const tool = getToolById(toolId)
     if (!tool) {
       return NextResponse.json({ error: '工具不存在' }, { status: 404 })
     }
 
-    const userInput = typeof input === 'object' && input !== null && !Array.isArray(input) ? input : {}
+    const userInput = rawInput && typeof rawInput === 'object' && !Array.isArray(rawInput) ? rawInput as Record<string, unknown> : {}
 
     for (const field of tool.fields) {
       const val = userInput[field.key]
@@ -88,9 +93,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const inputForPrompt = userInput as Record<string, string>
     const messages = [
-      { role: 'system' as const, content: tool.systemPrompt(userInput) },
-      { role: 'user' as const, content: tool.userPrompt(userInput) },
+      { role: 'system' as const, content: tool.systemPrompt(inputForPrompt) },
+      { role: 'user' as const, content: tool.userPrompt(inputForPrompt) },
     ]
 
     let output: string
@@ -102,7 +108,8 @@ export async function POST(request: NextRequest) {
       })
       output = result.content
       tokensUsed = result.tokensUsed
-    } catch {
+    } catch (err) {
+      logError('ai/run', { userId: user.id, toolId }, err)
       await prisma.user.updateMany({
         where: { id: user.id, usedToday: { gt: 0 } },
         data: { usedToday: { decrement: 1 } },
@@ -138,7 +145,7 @@ export async function POST(request: NextRequest) {
       remaining: Math.max(effectiveLimit - currentUsed, 0),
     })
   } catch (err) {
-    console.error('AI tool error:', err)
+    logError('ai/run', {}, err)
     return NextResponse.json({ error: '处理失败，请稍后重试' }, { status: 500 })
   }
 }

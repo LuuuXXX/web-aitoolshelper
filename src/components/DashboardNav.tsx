@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Icon from '@/components/Icon'
 import { getPlanLabel } from '@/config/pricing'
@@ -19,23 +19,33 @@ interface UserInfo {
 
 export default function DashboardNav() {
   const pathname = usePathname()
-  const router = useRouter()
   const [user, setUser] = useState<UserInfo | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   useEffect(() => {
     fetch('/api/user')
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.status === 401) {
+          window.location.href = '/auth?mode=login&error=session_expired'
+          return null
+        }
+        return r.json()
+      })
       .then((data) => {
-        if (data.user) setUser(data.user)
+        if (data?.user) setUser(data.user)
       })
       .catch(() => {})
   }, [pathname])
 
   async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-    router.refresh()
+    setLoggingOut(true)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+    } finally {
+      window.location.href = '/auth?mode=login'
+    }
   }
 
   const navItems = [
@@ -117,7 +127,8 @@ export default function DashboardNav() {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 mt-4 rounded-lg text-sm transition-colors hover:bg-red-50 text-red-500"
+          disabled={loggingOut}
+          className="flex items-center gap-3 px-3 py-2 mt-4 rounded-lg text-sm transition-colors hover:bg-red-50 text-red-500 disabled:opacity-50"
         >
           <LogOut className="w-4 h-4" />
           退出登录

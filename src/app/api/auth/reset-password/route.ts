@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { isEmail } from '@/lib/utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '@/lib/password'
+import { parseBody, resetPasswordSchema, csrfOk, csrfDenied } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,24 +16,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { account, code, newPassword } = body
+    if (!csrfOk(request)) return csrfDenied()
 
-    if (!account || !code || !newPassword) {
-      return NextResponse.json({ error: '请填写完整信息' }, { status: 400 })
-    }
-
-    if (typeof newPassword !== 'string' || newPassword.length < 8) {
-      return NextResponse.json({ error: '密码至少 8 位' }, { status: 400 })
-    }
-
-    if (newPassword.length > 128) {
-      return NextResponse.json({ error: '密码过长' }, { status: 400 })
-    }
-
-    if (!isEmail(account)) {
-      return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
-    }
+    const body = await parseBody(resetPasswordSchema, request)
+    if (!body.ok) return body.response
+    const { account, code, newPassword } = body.data
 
     const attemptLimited = rateLimit(`verify:${account}`, 5, 300_000)
     if (!attemptLimited.allowed) {
@@ -62,7 +50,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '验证码无效或已过期' }, { status: 400 })
     }
 
-    const passwordHash = await bcrypt.hash(newPassword, 12)
+    const passwordHash = await hashPassword(newPassword)
 
     try {
       await prisma.$transaction(async (tx) => {
@@ -80,13 +68,14 @@ export async function POST(request: NextRequest) {
           },
         })
       })
-    } catch {
+    } catch (err) {
+      logError('auth/reset-password', { account }, err)
       return NextResponse.json({ error: '验证码无效或已使用' }, { status: 400 })
     }
 
     return NextResponse.json({ success: true, message: '密码重置成功' })
   } catch (err) {
-    console.error('Reset password error:', err)
+    logError('auth/reset-password', {}, err)
     return NextResponse.json({ error: '重置失败，请稍后重试' }, { status: 500 })
   }
 }

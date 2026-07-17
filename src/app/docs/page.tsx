@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { TOOLS, CATEGORIES } from '@/config/tools'
+import { PLANS, FREE_PLAN } from '@/config/pricing'
 
 export const metadata = {
   title: '使用文档',
@@ -123,25 +124,17 @@ export default function DocsPage() {
                 </thead>
                 <tbody>
                   <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-                    <td className="p-3">免费体验</td>
-                    <td className="p-3">¥0</td>
-                    <td className="p-3">5 次/天</td>
+                    <td className="p-3">{FREE_PLAN.name}</td>
+                    <td className="p-3">¥{FREE_PLAN.price}</td>
+                    <td className="p-3">{FREE_PLAN.dailyLimit} 次/天</td>
                   </tr>
-                  <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-                    <td className="p-3">月度会员</td>
-                    <td className="p-3">¥19.9/月</td>
-                    <td className="p-3">50 次/天</td>
-                  </tr>
-                  <tr className="border-b" style={{ borderColor: 'var(--card-border)' }}>
-                    <td className="p-3">季度会员</td>
-                    <td className="p-3">¥59/季</td>
-                    <td className="p-3">50 次/天</td>
-                  </tr>
-                  <tr>
-                    <td className="p-3">年度会员</td>
-                    <td className="p-3">¥168/年</td>
-                    <td className="p-3">80 次/天</td>
-                  </tr>
+                  {PLANS.map((p) => (
+                    <tr key={p.id} className="border-b" style={{ borderColor: 'var(--card-border)' }}>
+                      <td className="p-3">{p.name}</td>
+                      <td className="p-3">¥{p.price}</td>
+                      <td className="p-3">{p.dailyLimit} 次/天</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
               <p>每日额度在每天 00:00 重置。未使用的额度不会累积。</p>

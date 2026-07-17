@@ -5,9 +5,13 @@ import { generateOrderNo } from '@/lib/utils'
 import { createPayment, isAlipayConfigured } from '@/lib/alipay'
 import { getPlanById } from '@/config/pricing'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { parseBody, paymentCreateSchema, csrfOk, csrfDenied } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
+    if (!csrfOk(request)) return csrfDenied()
+
     const session = await verifySession()
     if (!session) {
       return NextResponse.json({ error: '请先登录' }, { status: 401 })
@@ -19,8 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '操作过于频繁，请稍后再试' }, { status: 429 })
     }
 
-    const body = await request.json()
-    const { planId } = body
+    const body = await parseBody(paymentCreateSchema, request)
+    if (!body.ok) return body.response
+    const { planId } = body.data
     const plan = getPlanById(planId)
 
     if (!plan) {
@@ -57,7 +62,7 @@ export async function POST(request: NextRequest) {
       paymentUrl,
     })
   } catch (err) {
-    console.error('Create order error:', err)
+    logError('payment/create', {}, err)
     return NextResponse.json({ error: '创建订单失败' }, { status: 500 })
   }
 }

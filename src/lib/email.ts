@@ -27,6 +27,15 @@ export function isEmailConfigured(): boolean {
   return getTransporter() !== null
 }
 
+export function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
   const t = getTransporter()
   if (!t) {
@@ -46,12 +55,13 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
 
 export async function sendVerificationCode(to: string, code: string, type: 'register' | 'reset'): Promise<boolean> {
   const action = type === 'register' ? '注册' : '重置密码'
+  const safeCode = escapeHtml(code)
   const html = `
     <div style="max-width:480px;margin:0 auto;font-family:sans-serif;padding:24px;">
       <h2 style="color:#6366f1;">AI工具箱 - ${action}验证码</h2>
       <p>您正在进行<strong>${action}</strong>操作，验证码为：</p>
       <div style="font-size:32px;font-weight:bold;letter-spacing:4px;color:#6366f1;text-align:center;padding:16px;background:#f5f3ff;border-radius:8px;margin:16px 0;">
-        ${code}
+        ${safeCode}
       </div>
       <p style="color:#666;font-size:14px;">验证码 5 分钟内有效，请勿泄露给他人。</p>
     </div>

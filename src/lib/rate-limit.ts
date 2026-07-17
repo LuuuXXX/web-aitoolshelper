@@ -43,12 +43,20 @@ export function rateLimit(
 }
 
 export function getClientIp(request: Request): string {
-  const real = request.headers.get('x-real-ip')
-  if (real) return real.trim()
+  const hops = Math.max(0, parseInt(process.env.TRUSTED_PROXY_HOPS || '1', 10) || 1)
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
-    const parts = forwarded.split(',').map((s) => s.trim())
-    return parts[parts.length - 1] || 'unknown'
+    const parts = forwarded
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (parts.length) {
+      const idx = Math.min(parts.length - 1, Math.max(0, parts.length - 1 - hops))
+      const ip = parts[idx]
+      if (ip) return ip
+    }
   }
+  const real = request.headers.get('x-real-ip')
+  if (real) return real.trim()
   return 'unknown'
 }

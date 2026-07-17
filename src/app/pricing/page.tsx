@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -9,7 +9,6 @@ import { PLANS, FREE_PLAN } from '@/config/pricing'
 import * as Icons from 'lucide-react'
 
 function PricingContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const selectedPlan = searchParams.get('plan')
   const [user, setUser] = useState<{ plan?: string } | null>(null)
@@ -18,9 +17,12 @@ function PricingContent() {
 
   useEffect(() => {
     fetch('/api/user')
-      .then((r) => r.json())
+      .then((r) => {
+        if (r.status === 401) return null
+        return r.json()
+      })
       .then((data) => {
-        if (data.user) setUser(data.user)
+        if (data?.user) setUser(data.user)
       })
       .catch(() => {})
   }, [])
@@ -28,7 +30,7 @@ function PricingContent() {
   async function handleSubscribe(planId: string) {
     setError('')
     if (!user) {
-      router.push('/login')
+      window.location.assign('/auth?mode=login&redirect=/pricing')
       return
     }
 

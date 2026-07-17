@@ -5,6 +5,7 @@ import { queryPayment } from '@/lib/alipay'
 import { getPlanById } from '@/config/pricing'
 import { getDailyLimit } from '@/lib/dal'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logError } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
       const result = await queryPayment(order.tradeNo || '', orderNo)
       if (result && result.tradeStatus === 'TRADE_SUCCESS') {
         if (Math.abs(result.totalAmount - Number(order.amount)) > 0.01) {
-          console.error(`Payment amount mismatch (check): order ${orderNo} expected ${order.amount}, got ${result.totalAmount}`)
+          logError('payment/check', { orderNo, expected: order.amount, got: result.totalAmount }, new Error('amount_mismatch'))
           return NextResponse.json({ error: '支付金额异常' }, { status: 400 })
         }
 
@@ -83,13 +84,13 @@ export async function GET(request: NextRequest) {
         }
         return NextResponse.json({ success: true, status: 'paid' })
       }
-    } catch {
-      // 查询失败时返回当前状态
+    } catch (err) {
+      logError('payment/check', { orderNo }, err)
     }
 
     return NextResponse.json({ success: true, status: order.status, order })
   } catch (err) {
-    console.error('Check payment error:', err)
+    logError('payment/check', {}, err)
     return NextResponse.json({ error: '查询失败' }, { status: 500 })
   }
 }

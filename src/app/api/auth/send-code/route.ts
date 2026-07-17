@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { generateCode, isEmail } from '@/lib/utils'
+import { generateCode } from '@/lib/utils'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 import { sendVerificationCode } from '@/lib/email'
+import { parseBody, sendCodeSchema, csrfOk, csrfDenied } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,18 +14,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '发送过于频繁，请稍后再试' }, { status: 429 })
     }
 
-    const body = await request.json()
-    const { target, type: rawType = 'register' } = body
+    if (!csrfOk(request)) return csrfDenied()
 
-    const type = rawType === 'register' || rawType === 'reset' ? rawType : 'register'
-
-    if (!target) {
-      return NextResponse.json({ error: '请输入邮箱' }, { status: 400 })
-    }
-
-    if (!isEmail(target)) {
-      return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
-    }
+    const body = await parseBody(sendCodeSchema, request)
+    if (!body.ok) return body.response
+    const { target, type } = body.data
 
     const targetLimited = rateLimit(`sendcode:${target}`, 5, 3600_000)
     if (!targetLimited.allowed) {
@@ -76,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, message: '验证码已发送' })
   } catch (err) {
-    console.error('Send code error:', err)
+    logError('auth/send-code', {}, err)
     return NextResponse.json({ error: '发送失败，请稍后重试' }, { status: 500 })
   }
 }

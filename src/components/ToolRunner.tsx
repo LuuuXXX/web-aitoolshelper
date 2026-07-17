@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Loader2, Sparkles, Copy, Check, PenTool } from 'lucide-react'
 import Icon from '@/components/Icon'
 import type { ToolField } from '@/config/tools'
@@ -17,7 +17,6 @@ type ToolClientData = {
 }
 
 export default function ToolRunner({ tool }: { tool: ToolClientData }) {
-  const router = useRouter()
   const defaultValues: Record<string, string> = {}
   for (const f of tool.fields) {
     if (f.defaultValue) defaultValues[f.key] = f.defaultValue
@@ -26,6 +25,7 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
   const [loading, setLoading] = useState(false)
   const [output, setOutput] = useState('')
   const [error, setError] = useState('')
+  const [needUpgrade, setNeedUpgrade] = useState(false)
   const [copied, setCopied] = useState(false)
 
   function setField(key: string, value: string) {
@@ -55,9 +55,7 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || '处理失败')
-        if (data.needUpgrade) {
-          setTimeout(() => router.push('/pricing'), 1500)
-        }
+        setNeedUpgrade(!!data.needUpgrade)
         return
       }
       setOutput(data.output)
@@ -129,6 +127,11 @@ export default function ToolRunner({ tool }: { tool: ToolClientData }) {
           {error && (
             <div className="px-4 py-2.5 rounded-lg bg-red-50 text-red-600 text-sm dark:bg-red-900/20">
               {error}
+              {needUpgrade && (
+                <Link href="/pricing" className="block mt-1 underline hover:no-underline">
+                  点击升级套餐 →
+                </Link>
+              )}
             </div>
           )}
 

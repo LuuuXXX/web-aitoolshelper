@@ -4,7 +4,11 @@ import { verifyNotification } from '@/lib/alipay'
 import { getPlanById } from '@/config/pricing'
 import { getDailyLimit } from '@/lib/dal'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
+import { logError } from '@/lib/logger'
 
+// CSRF check is intentionally omitted: this is an Alipay server-to-server
+// webhook authenticated by signature verification (verifyNotification), not a
+// browser session request, so Origin/Sec-Fetch-Site checks do not apply.
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request)
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ msg: 'success' })
   } catch (err) {
-    console.error('Alipay notify error:', err)
+    logError('payment/notify', {}, err)
     return NextResponse.json({ msg: 'fail' }, { status: 500 })
   }
 }

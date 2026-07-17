@@ -1,14 +1,13 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import { isEmail } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 
 function AuthForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const [mode, setMode] = useState<'login' | 'register'>(
     searchParams.get('mode') === 'register' ? 'register' : 'login'
@@ -20,7 +19,9 @@ function AuthForm() {
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(
+    searchParams.get('error') === 'session_expired' ? '登录状态已失效，请重新登录' : ''
+  )
   const [countdown, setCountdown] = useState(0)
 
   useEffect(() => {
@@ -104,8 +105,18 @@ function AuthForm() {
         return
       }
       const redirectTo = searchParams.get('redirect') || '/dashboard'
-      router.push(redirectTo)
-      router.refresh()
+      try {
+        const verifyRes = await fetch('/api/auth/session', { method: 'GET' })
+        const verifyData = await verifyRes.json()
+        if (!verifyData.authenticated) {
+          setError('登录会话建立失败，可能因网络环境或安全设置导致，请重试或联系管理员。')
+          return
+        }
+      } catch {
+        setError('登录会话建立失败，可能因网络环境或安全设置导致，请重试或联系管理员。')
+        return
+      }
+      window.location.href = redirectTo
     } catch {
       setError('网络错误，请稍后重试')
     } finally {

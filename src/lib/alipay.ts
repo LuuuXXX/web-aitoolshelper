@@ -6,7 +6,8 @@ function readKey(path: string): string {
   if (!path) return ''
   try {
     return fs.readFileSync(path, 'utf-8').trim()
-  } catch {
+  } catch (err) {
+    console.error(`[alipay] Failed to read key file: ${path}`, err)
     return ''
   }
 }
@@ -87,10 +88,15 @@ export async function queryPayment(tradeNo: string, outTradeNo?: string): Promis
   const response = result as { alipay_trade_query_response?: { code: string; trade_status: string; trade_no: string; total_amount: string } }
   if (response.alipay_trade_query_response?.code === '10000') {
     const data = response.alipay_trade_query_response
+    const totalAmount = parseFloat(data.total_amount)
+    if (!Number.isFinite(totalAmount)) {
+      console.error(`[alipay] queryPayment returned non-finite total_amount: ${data.total_amount}`)
+      return null
+    }
     return {
       tradeStatus: data.trade_status,
       tradeNo: data.trade_no,
-      totalAmount: parseFloat(data.total_amount),
+      totalAmount,
     }
   }
   return null

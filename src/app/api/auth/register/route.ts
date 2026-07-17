@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { createSession } from '@/lib/session'
-import { isEmail } from '@/lib/utils'
+import { createSession, resolveSecure } from '@/lib/session'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '@/lib/password'
+import { parseBody, registerSchema, csrfOk, csrfDenied } from '@/lib/validation'
+import { logError } from '@/lib/logger'
+
+const REGISTER_FAIL = { error: '验证码无效或已过期', status: 400 }
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,40 +19,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { account, password, code, name } = body
+    if (!csrfOk(request)) return csrfDenied()
 
-    if (!account || !password) {
-      return NextResponse.json({ error: '请填写完整信息' }, { status: 400 })
-    }
-
-    if (typeof password !== 'string' || password.length < 8) {
-      return NextResponse.json({ error: '密码至少 8 位' }, { status: 400 })
-    }
-
-    if (password.length > 128) {
-      return NextResponse.json({ error: '密码过长' }, { status: 400 })
-    }
-
-    if (typeof name === 'string' && name.length > 32) {
-      return NextResponse.json({ error: '昵称过长' }, { status: 400 })
-    }
-
-    if (!isEmail(account)) {
-      return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
-    }
-
-    const existing = await prisma.user.findUnique({
-      where: { email: account },
-    })
-
-    if (existing) {
-      return NextResponse.json({ error: '该邮箱已注册' }, { status: 409 })
-    }
-
-    if (!code) {
-      return NextResponse.json({ error: '请输入验证码' }, { status: 400 })
-    }
+    const body = await parseBody(registerSchema, request)
+    if (!body.ok) return body.response
+    const { account, password, code, name } = body.data
 
     const attemptLimited = rateLimit(`verify:${account}`, 5, 300_000)
     if (!attemptLimited.allowed) {
@@ -68,10 +42,19 @@ export async function POST(request: NextRequest) {
     })
 
     if (!record) {
-      return NextResponse.json({ error: '验证码无效或已过期' }, { status: 400 })
+      return NextResponse.json(REGISTER_FAIL, { status: REGISTER_FAIL.status })
     }
 
-    const passwordHash = await bcrypt.hash(password, 12)
+    const existing = await prisma.user.findUnique({
+      where: { email: account },
+      select: { id: true },
+    })
+
+    if (existing) {
+      return NextResponse.json(REGISTER_FAIL, { status: REGISTER_FAIL.status })
+    }
+
+    const passwordHash = await hashPassword(password)
 
     let user
     try {
@@ -86,15 +69,20 @@ export async function POST(request: NextRequest) {
           data: {
             email: account,
             passwordHash,
-            name: typeof name === 'string' ? (name || account.split('@')[0]) : account.split('@')[0],
+            name: name || account.split('@')[0],
           },
         })
       })
-    } catch {
-      return NextResponse.json({ error: '注册失败，验证码可能已被使用或邮箱已注册' }, { status: 409 })
+    } catch (err) {
+      logError('auth/register', { account }, err)
+      return NextResponse.json(REGISTER_FAIL, { status: REGISTER_FAIL.status })
     }
 
-    await createSession(user.id, user.role, user.tokenVersion)
+    const secure = resolveSecure({
+      proto: request.nextUrl.protocol,
+      forwardedProto: request.headers.get('x-forwarded-proto') ?? undefined,
+    })
+    await createSession(user.id, user.role, user.tokenVersion, { secure })
 
     return NextResponse.json({
       success: true,
@@ -107,7 +95,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (err) {
-    console.error('Register error:', err)
+    logError('auth/register', {}, err)
     return NextResponse.json({ error: '注册失败，请稍后重试' }, { status: 500 })
   }
 }

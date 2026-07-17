@@ -5,7 +5,10 @@ if (!API_KEY) {
   throw new Error('DEEPSEEK_API_KEY environment variable is required')
 }
 const BASE_URL = process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
-const DEFAULT_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-v4-pro'
+const DEFAULT_MODEL = process.env.DEEPSEEK_MODEL
+if (!DEFAULT_MODEL) {
+  console.error('[deepseek] DEEPSEEK_MODEL is not set; AI requests may fail. Set DEEPSEEK_MODEL (e.g. deepseek-chat) in the environment.')
+}
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
@@ -27,6 +30,9 @@ export async function chatCompletion(
   }
 ): Promise<ChatResult> {
   const model = options?.model || DEFAULT_MODEL
+  if (!model) {
+    throw new Error('AI_SERVICE_ERROR: DEEPSEEK_MODEL is not configured')
+  }
   const temperature = options?.temperature ?? 0.7
   const maxTokens = options?.maxTokens ?? 4096
   const thinking = options?.thinking ?? false
@@ -63,7 +69,11 @@ export async function chatCompletion(
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'unknown')
-    console.error(`DeepSeek API error: ${response.status} - ${errorText}`)
+    if (response.status === 400 || response.status === 404) {
+      console.error(`DeepSeek API model error: ${response.status} - ${errorText} (model=${model}). Verify DEEPSEEK_MODEL is a valid model name.`)
+    } else {
+      console.error(`DeepSeek API error: ${response.status} - ${errorText}`)
+    }
     throw new Error('AI_SERVICE_ERROR')
   }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifySession } from '@/lib/dal'
+import { logError } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / pageSize),
     })
   } catch (err) {
-    console.error('Get history error:', err)
+    logError('ai/history', { userId: 'unknown' }, err)
     return NextResponse.json({ error: '获取历史记录失败' }, { status: 500 })
   }
 }

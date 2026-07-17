@@ -1,7 +1,7 @@
 import 'server-only'
 import { cache } from 'react'
 import { redirect } from 'next/navigation'
-import { getSession } from './session'
+import { getSession, deleteSession } from './session'
 import { prisma } from './db'
 import { getDailyLimitByPlan } from '@/config/pricing'
 
@@ -15,6 +15,7 @@ export const verifySession = cache(async () => {
     select: { role: true, tokenVersion: true },
   })
   if (!user || user.tokenVersion !== (session.tokenVersion ?? 0)) {
+    await deleteSession()
     return null
   }
   return { isAuth: true, userId: session.userId, role: user.role }
@@ -23,7 +24,7 @@ export const verifySession = cache(async () => {
 export const requireAuth = cache(async () => {
   const session = await verifySession()
   if (!session) {
-    redirect('/auth?mode=login')
+    redirect('/auth?mode=login&error=session_expired')
   }
   return session
 })
@@ -54,7 +55,11 @@ export const getCurrentUser = cache(async () => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     if (!user.lastUseDate || user.lastUseDate < today) {
-      return { ...user, usedToday: 0 }
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { usedToday: 0, lastUseDate: today },
+      })
+      return { ...user, usedToday: 0, lastUseDate: today }
     }
   }
 

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
-import { createSession } from '@/lib/session'
-import { isEmail } from '@/lib/utils'
+import { createSession, resolveSecure } from '@/lib/session'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
-import bcrypt from 'bcryptjs'
+import { hashPassword, comparePassword } from '@/lib/password'
+import { parseBody, loginSchema, csrfOk, csrfDenied } from '@/lib/validation'
+import { logError } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,36 +17,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const body = await request.json()
-    const { account, password } = body
+    if (!csrfOk(request)) return csrfDenied()
 
-    if (!account || !password || typeof password !== 'string') {
-      return NextResponse.json({ error: '请填写账号和密码' }, { status: 400 })
-    }
-
-    if (password.length > 128) {
-      return NextResponse.json({ error: '密码过长' }, { status: 400 })
-    }
-
-    if (!isEmail(account)) {
-      return NextResponse.json({ error: '请输入有效的邮箱' }, { status: 400 })
-    }
+    const body = await parseBody(loginSchema, request)
+    if (!body.ok) return body.response
+    const { account, password } = body.data
 
     const user = await prisma.user.findUnique({
       where: { email: account },
     })
 
     if (!user) {
-      await bcrypt.hash(password, 12)
+      await hashPassword(password)
       return NextResponse.json({ error: '账号或密码错误' }, { status: 401 })
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash)
+    const valid = await comparePassword(password, user.passwordHash)
     if (!valid) {
       return NextResponse.json({ error: '账号或密码错误' }, { status: 401 })
     }
 
-    await createSession(user.id, user.role, user.tokenVersion)
+    const secure = resolveSecure({
+      proto: request.nextUrl.protocol,
+      forwardedProto: request.headers.get('x-forwarded-proto') ?? undefined,
+    })
+    await createSession(user.id, user.role, user.tokenVersion, { secure })
 
     return NextResponse.json({
       success: true,
@@ -58,7 +54,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (err) {
-    console.error('Login error:', err)
+    logError('auth/login', {}, err)
     return NextResponse.json({ error: '登录失败，请稍后重试' }, { status: 500 })
   }
 }
